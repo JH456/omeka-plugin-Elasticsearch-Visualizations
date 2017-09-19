@@ -9,7 +9,7 @@
 
 define('ELASTICSEARCH_PLUGIN_DIR', dirname(__FILE__));
 require(ELASTICSEARCH_PLUGIN_DIR.'/forms/Elasticsearch_Form_Server.php');
-
+require(ELASTICSEARCH_PLUGIN_DIR.'/forms/Elasticsearch_Form_Index.php');
 
 class ElasticsearchPlugin extends Omeka_Plugin_AbstractPlugin {
     protected $_hooks = array(
