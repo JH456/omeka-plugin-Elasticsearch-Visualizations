@@ -19,8 +19,12 @@ class Elasticsearch_AdminController extends Omeka_Controller_AbstractActionContr
 
         if ($this->_request->isPost()) {
             // dispatch background job to index content
+            // install php client library for elasticsearch
+            // try to index something
             try {
                 $this->_helper->flashMessenger(__('Reindexing started.'), 'success');
+                $job = new Elasticsearch_Job_Index( array() );
+                $job->perform();
             } catch (Exception $err) {
                 $this->_helper->flashMessenger($err->getMessage(), 'error');
             }
