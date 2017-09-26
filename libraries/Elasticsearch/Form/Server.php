@@ -6,7 +6,7 @@ class Elasticsearch_Form_Server extends Omeka_Form {
 
         // Host
         $this->addElement('text', 'elasticsearch_endpoint', array(
-            'label'         => __('Sever Endpoint'),
+            'label'         => __('Server URL'),
             'description'   => __('The endpoint of the elasticsearch service (e.g. http://localhost:9200).'),
             'value'         => get_option('elasticsearch_endpoint'),
             'required'      => true,

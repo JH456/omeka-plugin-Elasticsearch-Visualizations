@@ -1,15 +1,14 @@
 <?php
 
 /**
- * @package omeka
+ * @package Elasticsearch
  * @subpackage elasticsearch
  * @copyright 2017 President and Fellows of Harvard College
  * @license https://opensource.org/licenses/BSD-3-Clause
  */
 
 define('ELASTICSEARCH_PLUGIN_DIR', dirname(__FILE__));
-require(ELASTICSEARCH_PLUGIN_DIR.'/forms/Elasticsearch_Form_Server.php');
-require(ELASTICSEARCH_PLUGIN_DIR.'/forms/Elasticsearch_Form_Index.php');
+#require(ELASTICSEARCH_PLUGIN_DIR.'/libraries/Elasticsearch/autoload.php');
 require (ELASTICSEARCH_PLUGIN_DIR.'/vendor/autoload.php');
 
 class ElasticsearchPlugin extends Omeka_Plugin_AbstractPlugin {
