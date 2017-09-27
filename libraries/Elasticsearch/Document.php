@@ -21,7 +21,7 @@ class Elasticsearch_Document {
     public function __construct($docIndex, $docType, $docId=null) {
         $this->_index = $docIndex;
         $this->_type = $docType;
-        $this->_id = $docId;
+        $this->_id = "{$docType}_{$docId}";
         $this->_body = [];
     }
 
@@ -37,10 +37,12 @@ class Elasticsearch_Document {
         $params = [
             'index' => $this->_index,
             'type' => $this->_type,
-            'body' => $this->_body
         ];
         if(isset($this->_id)) {
             $params['id'] = $this->_id;
+        }
+        if(!empty($this->_body)) {
+            $params['body'] = $this->_body;
         }
         return $params;
     }

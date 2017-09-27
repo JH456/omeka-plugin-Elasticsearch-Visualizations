@@ -5,9 +5,8 @@
  */
 class Elasticsearch_Helper_Index {
 
-
     /**
-     * Indexes all items in the Omeka site.
+     * Indexes all content.
      *
      * Types of documents to index include things that can be uniquely referenced via URL. That includes:
      *      - Items
@@ -21,6 +20,18 @@ class Elasticsearch_Helper_Index {
 	public static function indexAll($docIndex) {
         $docs = self::getItemDocuments($docIndex);
         Elasticsearch_Document::bulkIndex($docs);
+    }
+
+    /**
+     * Indexes a single Item record.
+     *
+     * @param $docIndex
+     * @param $item
+     * @return array
+     */
+    public static function indexItem($docIndex, $item) {
+	    $doc = self::getItemDocument($docIndex, $item);
+	    return $doc->index();
     }
 
     /**
@@ -53,7 +64,7 @@ class Elasticsearch_Helper_Index {
      * @return Elasticsearch_Document
      */
     public static function getItemDocument($docIndex, $item) {
-        $doc = new Elasticsearch_Document($docIndex, 'item', "Item_{$item->id}");
+        $doc = new Elasticsearch_Document($docIndex, 'item', $item->id);
         $doc->setFields([
             'model'     => 'Item',
             'modelid'   => $item->id,
@@ -101,6 +112,17 @@ class Elasticsearch_Helper_Index {
         if(self::client()->indices()->exists(['index' => $docIndex])) {
             self::client()->indices()->delete(['index' => $docIndex]);
         }
+    }
+
+    /**
+     * Deletes an item from the index.
+     *
+     * @param $docIndex
+     * @param $item
+     */
+    public static function deleteItem($docIndex, $item) {
+        $doc = new Elasticsearch_Document($docIndex, 'item', $item->id);
+        self::client()->delete($doc->getParams());
     }
 
     /**
