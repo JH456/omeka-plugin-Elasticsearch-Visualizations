@@ -27,7 +27,8 @@ class Elasticsearch_AdminController extends Omeka_Controller_AbstractActionContr
     }
 
     public function reindexAction() {
-        $form = new Elasticsearch_Form_Index();
+        $this->view->form = new Elasticsearch_Form_Index();
+        $config = Elasticsearch_Utils::getConfig();
 
         if ($this->_request->isPost()) {
             try {
@@ -35,14 +36,12 @@ class Elasticsearch_AdminController extends Omeka_Controller_AbstractActionContr
                 $job_dispatcher->send('Elasticsearch_Job_Reindex', array(
                     'user'     => $this->getCurrentUser(),
                     'db'       => $this->_helper->db,
-                    'index'    => 'myindex'
+                    'index'    => $config->index->name
                 ));
                 $this->_helper->flashMessenger(__('Reindexing started.'), 'success');
             } catch (Exception $err) {
                 $this->_helper->flashMessenger($err->getMessage(), 'error');
             }
         }
-
-        $this->view->form = $form;
     }
 }

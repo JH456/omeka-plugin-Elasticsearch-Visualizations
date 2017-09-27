@@ -8,7 +8,6 @@
  */
 
 define('ELASTICSEARCH_PLUGIN_DIR', dirname(__FILE__));
-#require(ELASTICSEARCH_PLUGIN_DIR.'/libraries/Elasticsearch/autoload.php');
 require (ELASTICSEARCH_PLUGIN_DIR.'/vendor/autoload.php');
 
 class ElasticsearchPlugin extends Omeka_Plugin_AbstractPlugin {

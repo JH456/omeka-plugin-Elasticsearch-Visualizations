@@ -11,9 +11,9 @@ class Elasticsearch_Job_Reindex extends Omeka_Job_AbstractJob {
      * Main runnable method.
      */
     public function perform() {
-        $index = $this->_options['index'];
-        error_log("performing elasticsearch reindex: $index");
-        Elasticsearch_Helper_Index::deleteAll($index);
-        Elasticsearch_Helper_Index::indexAll($index);
+        $docIndex = $this->_options['index'];
+        error_log("performing elasticsearch reindex on index=$docIndex");
+        Elasticsearch_Helper_Index::deleteAll($docIndex);
+        Elasticsearch_Helper_Index::indexAll($docIndex);
     }
 }
