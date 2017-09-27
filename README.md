@@ -4,8 +4,5 @@ This plugin integrates [elasticsearch](https://www.elastic.co/products/elasticse
 
 ## Unit Tests
 
-Follow the [getting started instructions](https://phpunit.de/getting-started.html) to download and install _phpunit_. To run the tests:
-
-```sh
-$ phpunit --bootstrap libraries/Elasticsearch/autoload.php tests
-```
+1. Follow the [getting started instructions](https://phpunit.de/getting-started.html) to download and install _phpunit_. 
+2. Run the tests from the root directory: `phpunit --configuration phpunit.xml` 
