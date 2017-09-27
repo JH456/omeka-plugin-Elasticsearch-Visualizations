@@ -27,7 +27,7 @@ class Elasticsearch_Helper_Index {
      * Get array of documents to index.
      *
      * @param $docIndex
-     * @return array of documents
+     * @return array of Elasticsearch_Document objects
      */
     public static function getItemDocuments($docIndex) {
         $db = get_db();
@@ -35,47 +35,10 @@ class Elasticsearch_Helper_Index {
         $select = $table->getSelect();
         $table->applySorting($select, 'id', 'ASC');
         $items = $table->fetchObjects($select);
+
         $docs = [];
-
         foreach($items as $item) {
-            $doc = new Elasticsearch_Document($docIndex, 'item', "Item_{$item->id}");
-            $doc->setFields([
-                'model'     => 'Item',
-                'modelid'   => $item->id,
-                'featured'  => (bool) $item->featured,
-                'public'    => $item->public,
-                'resulttype'=> 'Item'
-            ]);
-
-            // title:
-            $title = metadata($item, array('Dublin Core', 'Title'));
-            $doc->setField('title', $title);
-
-            // collection:
-            if ($collection = $item->getCollection()) {
-                $doc->setField('collection', metadata($collection, array('Dublin Core', 'Title')));
-            }
-
-            // item type:
-            if ($itemType = $item->getItemType()) {
-                $doc->setField('itemType', $itemType->name);
-            }
-
-            // elements:
-            $elements = [];
-            foreach($item->getAllElementTexts() as $elementText) {
-                $element = $item->getElementById($elementText->element_id);
-                $elements[] = [$element->name => $elementText->text];
-            }
-            $doc->setField('elements', $elements);
-
-            // tags:
-            $tags = [];
-            foreach ($item->getTags() as $tag) {
-                $tags[] = $tag->name;
-            }
-            $doc->setField('tags', $tags);
-
+            $doc = self::getItemDocument($docIndex, $item);
             $docs[] = $doc;
         }
 
@@ -83,9 +46,58 @@ class Elasticsearch_Helper_Index {
     }
 
     /**
+     * Returns an item as a document.
+     *
+     * @param $docIndex
+     * @param $item
+     * @return Elasticsearch_Document
+     */
+    public static function getItemDocument($docIndex, $item) {
+        $doc = new Elasticsearch_Document($docIndex, 'item', "Item_{$item->id}");
+        $doc->setFields([
+            'model'     => 'Item',
+            'modelid'   => $item->id,
+            'featured'  => (bool) $item->featured,
+            'public'    => $item->public,
+            'resulttype'=> 'Item'
+        ]);
+
+        // title:
+        $title = metadata($item, array('Dublin Core', 'Title'));
+        $doc->setField('title', $title);
+
+        // collection:
+        if ($collection = $item->getCollection()) {
+            $doc->setField('collection', metadata($collection, array('Dublin Core', 'Title')));
+        }
+
+        // item type:
+        if ($itemType = $item->getItemType()) {
+            $doc->setField('itemType', $itemType->name);
+        }
+
+        // elements:
+        $elements = [];
+        foreach($item->getAllElementTexts() as $elementText) {
+            $element = $item->getElementById($elementText->element_id);
+            $elements[] = [$element->name => $elementText->text];
+        }
+        $doc->setField('elements', $elements);
+
+        // tags:
+        $tags = [];
+        foreach ($item->getTags() as $tag) {
+            $tags[] = $tag->name;
+        }
+        $doc->setField('tags', $tags);
+        return $doc;
+    }
+
+    /**
      * Deletes all items in the elasticsearch index.
      */
     public static function deleteAll($docIndex) {
+        // Just delete the whole index... assumes that index auto-creation is enabled
         if(self::client()->indices()->exists(['index' => $docIndex])) {
             self::client()->indices()->delete(['index' => $docIndex]);
         }
