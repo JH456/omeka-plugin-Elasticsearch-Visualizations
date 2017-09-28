@@ -49,8 +49,7 @@ class Elasticsearch_Helper_Index {
 
         $docs = [];
         foreach($items as $item) {
-            $doc = self::getItemDocument($docIndex, $item);
-            $docs[] = $doc;
+            $docs[] = self::getItemDocument($docIndex, $item);
         }
 
         return $docs;
@@ -69,7 +68,7 @@ class Elasticsearch_Helper_Index {
             'model'     => 'Item',
             'modelid'   => $item->id,
             'featured'  => (bool) $item->featured,
-            'public'    => $item->public,
+            'public'    => (bool) $item->public,
             'resulttype'=> 'Item'
         ]);
 
@@ -91,7 +90,7 @@ class Elasticsearch_Helper_Index {
         $elements = [];
         foreach($item->getAllElementTexts() as $elementText) {
             $element = $item->getElementById($elementText->element_id);
-            $elements[] = [$element->name => $elementText->text];
+            $elements[$element->name] = $elementText->text;
         }
         $doc->setField('elements', $elements);
 
@@ -101,6 +100,7 @@ class Elasticsearch_Helper_Index {
             $tags[] = $tag->name;
         }
         $doc->setField('tags', $tags);
+
         return $doc;
     }
 
