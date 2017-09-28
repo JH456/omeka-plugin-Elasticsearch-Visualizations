@@ -105,6 +105,57 @@ class Elasticsearch_Helper_Index {
     }
 
     /**
+     * Executes a search query on an index.
+     *
+     * @param $docIndex
+     * @param $query
+     * @param $options
+     * @return array
+     */
+    public static function search($docIndex, $query, $options) {
+        $only_public_items = $options['only_public_items'];
+        $offset = $options['offset'];
+        $limit = $options['limit'];
+
+        $body = [
+            'query' => [
+                'bool' => [
+                    'must' => [
+                        'multi_match' => [
+                            'query' => $query,
+                            'fields' => ['title', 'collection', 'itemType', 'elements.*', 'tags.*'],
+                            'type' => 'best_fields'
+                        ]
+                    ]
+                ]
+            ],
+            'highlight' => [
+                'fields' => [
+                    'collection' => new \stdClass(),
+                    'elements.*' => ['fragment_size' => 500, 'number_of_fragments' => 3],
+                    'tags.*'     => new \stdClass()
+                ]
+            ]
+        ];
+
+        if($only_public_items) {
+            $body['query']['bool']['filter'] = [
+                'term' => ['public' => 'true']
+            ];
+        }
+
+        $params = [
+            'index' => $docIndex,
+            'from' => $offset,
+            'size' => $limit,
+            'body' => $body
+        ];
+        error_log("elasticsearch search params: ".var_export($params,1));
+
+        return self::client()->search($params);
+    }
+
+    /**
      * Deletes all items in the elasticsearch index.
      */
     public static function deleteAll($docIndex) {

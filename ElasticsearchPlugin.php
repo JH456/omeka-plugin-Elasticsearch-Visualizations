@@ -51,6 +51,8 @@ class ElasticsearchPlugin extends Omeka_Plugin_AbstractPlugin {
 
     public function hookAfterSaveItem($args) {
         $record = $args['record'];
+        $config = Elasticsearch_Utils::getConfig();
+        Elasticsearch_Helper_Index::indexItem($config->index->name, $record);
     }
 
     public function hookAfterSaveElement($args) {
@@ -64,6 +66,8 @@ class ElasticsearchPlugin extends Omeka_Plugin_AbstractPlugin {
 
     public function hookBeforeDeleteItem($args) {
         $record = $args['record'];
+        $config = Elasticsearch_Utils::getConfig();
+        Elasticsearch_Helper_Index::deleteItem($config->index->name, $record);
     }
 
     public function hookBeforeDeleteElement($args) {
@@ -73,7 +77,7 @@ class ElasticsearchPlugin extends Omeka_Plugin_AbstractPlugin {
     public function filterAdminNavigationMain($nav) {
         $nav[] = array(
             'label' => __('Elasticsearch'),
-            'uri' => url('elasticsearch/server')
+            'uri' => url('elasticsearch/admin/server')
         );
         return $nav;
     }

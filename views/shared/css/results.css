@@ -1,0 +1,19 @@
+ul.elasticsearch-highlight {
+    list-style: none;
+}
+ul.elasticsearch-highlight > li {
+    margin-bottom: 0.5em;
+}
+ul.elasticsearch-highlight > li em {
+    background-color: yellow;
+}
+.elasticsearch-highlight-field {
+    display: block;
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.elasticsearch-result {
+    border-bottom: 1px solid #ccc;
+}
+

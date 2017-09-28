@@ -18,7 +18,12 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
         $only_public_items = !$can_view_private_items;
 
         // execute query
-        $results = $this->_search($start, $limit, $only_public_items);
+        $config = Elasticsearch_Utils::getConfig();
+        $results = Elasticsearch_Helper_Index::search($config->index->name, $this->_request->q, [
+            'offset' => $start,
+            'limit' => $limit,
+            'only_public_items' => $only_public_items
+        ]);
 
         Zend_Registry::set('pagination', [
             'per_page'      => $limit,
@@ -27,39 +32,5 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
         ]);
 
         $this->view->assign('results', $results);
-    }
-
-    protected function _search($offset, $limit, $only_public_items=true) {
-        $client = Elasticsearch_Helper_Index::client();
-        $config = Elasticsearch_Utils::getConfig();
-        $query = $this->_getSearchQuery($only_public_items);
-
-        // See also: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
-        $params = [
-            'index' => $config->index->name,
-            'body' => [
-                'query' => [
-                    'query_string' => [
-                        'default_field' => '_all',
-                        'fields' => ['elements.*', 'title', 'collection', 'itemType', 'tags.*'],
-                        'query' => $query
-                    ]
-                ]
-            ]
-        ];
-        error_log("elasticsearch query: ".var_export($params,1));
-
-        return $client->search($params);
-    }
-
-    protected function _getSearchQuery($only_public_items) {
-        $query = $this->_request->q;
-        if(empty($query)) {
-            $query = '*';
-        }
-        if($only_public_items) {
-            $query .= ' AND public:true';
-        }
-        return $query;
     }
 }

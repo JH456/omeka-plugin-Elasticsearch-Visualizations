@@ -1,6 +1,7 @@
+<?php queue_css_file('results'); ?>
 <?php echo head(array('title' => __('Elasticsearch')));?>
 
-<h1><?php echo __('Search the Collection'); ?></h1>
+<h1><?php echo __('Search'); ?></h1>
 
 <form id="elasticsearch-search-form">
     <input type="submit" value="Search" />
@@ -10,6 +11,14 @@
 </form>
 
 <div id="elasticsearch-results">
-    <h2 id="num-found"><?php echo $results['hits']['total']; ?></h2>
-    <pre><?php var_export($results); ?></pre>
+    <h2>Found <?php echo $results['hits']['total']; ?> results</h2>
+
+    <?php foreach($results['hits']['hits'] as $hit): ?>
+        <?php echo $this->partial('search/partials/hit.php', array('hit' => $hit)); ?>
+    <?php endforeach; ?>
+
+    <small>Search query executed in <?php echo $results['took']; ?> milliseconds.</small>
 </div>
+
+<?php echo pagination_links(); ?>
+<?php echo foot();
