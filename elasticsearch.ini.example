@@ -1,2 +1,2 @@
 index = "omeka"
-aws_role_credentials = OaaSDev
+aws_role_credentials = "myOmekaRole"
