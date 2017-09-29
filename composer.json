@@ -1,5 +1,6 @@
 {
     "require": {
-        "elasticsearch/elasticsearch": "~5.0"
+        "elasticsearch/elasticsearch": "~5.0",
+        "aws/aws-sdk-php": "^3.36"
     }
 }
