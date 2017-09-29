@@ -28,15 +28,13 @@ class Elasticsearch_AdminController extends Omeka_Controller_AbstractActionContr
 
     public function reindexAction() {
         $this->view->form = new Elasticsearch_Form_Index();
-        $config = Elasticsearch_Utils::getConfig();
 
         if ($this->_request->isPost()) {
             try {
                 $job_dispatcher = Zend_Registry::get('job_dispatcher');
                 $job_dispatcher->send('Elasticsearch_Job_Reindex', array(
                     'user'     => $this->getCurrentUser(),
-                    'db'       => $this->_helper->db,
-                    'index'    => $config->index->name
+                    'db'       => $this->_helper->db
                 ));
                 $this->_helper->flashMessenger(__('Reindexing started.'), 'success');
             } catch (Exception $err) {

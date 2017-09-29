@@ -48,7 +48,8 @@ class Elasticsearch_Document {
     }
 
     public function index() {
-        return self::client()->index($this->getParams());
+        $client = Elasticsearch_Client::create();
+        return $client->index($this->getParams());
     }
 
     public static function getBulkParams(array $docs) {
@@ -71,10 +72,7 @@ class Elasticsearch_Document {
 
     public static function bulkIndex(array $docs) {
         $params = self::getBulkParams($docs);
-        return self::client()->bulk($params);
-    }
-
-    public static function client() {
-        return Elasticsearch\ClientBuilder::create()->build();
+        $client = Elasticsearch_Client::create();
+        return $client->bulk($params);
     }
 }

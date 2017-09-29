@@ -9,6 +9,7 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
 
     public function indexAction() {
         $limit = get_option('per_page_public');
+        $limit = isset($limit) ? $limit : 20;
         $page = $this->_request->page ? $this->_request->page : 1;
         $start = ($page - 1) * $limit;
         $user = $this->getCurrentUser();
@@ -18,8 +19,7 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
         $only_public_items = !$can_view_private_items;
 
         // execute query
-        $config = Elasticsearch_Utils::getConfig();
-        $results = Elasticsearch_Helper_Index::search($config->index->name, $this->_request->q, [
+        $results = Elasticsearch_Helper_Index::search($this->_request->q, [
             'offset' => $start,
             'limit' => $limit,
             'only_public_items' => $only_public_items

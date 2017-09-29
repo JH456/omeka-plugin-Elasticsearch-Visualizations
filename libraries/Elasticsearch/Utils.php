@@ -15,16 +15,6 @@ class Elasticsearch_Utils {
     }
 
     /**
-     * Returns the elasticsearch configuration file data.
-     *
-     * @return Zend_Config_Ini
-     */
-    public static function getConfig() {
-        $config = new Zend_Config_Ini(ELASTICSEARCH_PLUGIN_DIR.'/elasticsearch.ini');
-        return $config;
-    }
-
-    /**
      * Returns the URL for a document returned by an elasticsearch query (e.g. a "hit").
      * Depends on the document in question having "model" and "modelid" properties.
      *

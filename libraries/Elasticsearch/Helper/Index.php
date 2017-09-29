@@ -14,33 +14,30 @@ class Elasticsearch_Helper_Index {
      *      - TODO: Exhibits (addon)
      *      - TODO: Simplepages (addon)
      *
-     * @param $docIndex
      * @return void
      */
-    public static function indexAll($docIndex) {
-        $docs = self::getItemDocuments($docIndex);
+    public static function indexAll() {
+        $docs = self::getItemDocuments();
         Elasticsearch_Document::bulkIndex($docs);
     }
 
     /**
      * Indexes a single Item record.
      *
-     * @param $docIndex
      * @param $item
      * @return array
      */
-    public static function indexItem($docIndex, $item) {
-	    $doc = self::getItemDocument($docIndex, $item);
+    public static function indexItem($item) {
+	    $doc = self::getItemDocument($item);
 	    return $doc->index();
     }
 
     /**
      * Get array of documents to index.
      *
-     * @param $docIndex
      * @return array of Elasticsearch_Document objects
      */
-    public static function getItemDocuments($docIndex) {
+    public static function getItemDocuments() {
         $db = get_db();
         $table = $db->getTable('Item');
         $select = $table->getSelect();
@@ -49,7 +46,7 @@ class Elasticsearch_Helper_Index {
 
         $docs = [];
         foreach($items as $item) {
-            $docs[] = self::getItemDocument($docIndex, $item);
+            $docs[] = self::getItemDocument($item);
         }
 
         return $docs;
@@ -58,11 +55,11 @@ class Elasticsearch_Helper_Index {
     /**
      * Returns an item as a document.
      *
-     * @param $docIndex
      * @param $item
      * @return Elasticsearch_Document
      */
-    public static function getItemDocument($docIndex, $item) {
+    public static function getItemDocument($item) {
+        $docIndex = Elasticsearch_Config::index();
         $doc = new Elasticsearch_Document($docIndex, 'item', $item->id);
         $doc->setFields([
             'model'     => 'Item',
@@ -107,12 +104,12 @@ class Elasticsearch_Helper_Index {
     /**
      * Executes a search query on an index.
      *
-     * @param $docIndex
      * @param $query
      * @param $options
      * @return array
      */
-    public static function search($docIndex, $query, $options) {
+    public static function search($query, $options) {
+        $docIndex = Elasticsearch_Config::index();
         $only_public_items = $options['only_public_items'];
         $offset = $options['offset'];
         $limit = $options['limit'];
@@ -157,21 +154,25 @@ class Elasticsearch_Helper_Index {
 
     /**
      * Deletes all items in the elasticsearch index.
+     *
+     * Assumes that index auto-creation is enabled so that when items are re-indexed,
+     * the index will be created automatically.
      */
-    public static function deleteAll($docIndex) {
-        // Just delete the whole index... assumes that index auto-creation is enabled
-        if(self::client()->indices()->exists(['index' => $docIndex])) {
-            self::client()->indices()->delete(['index' => $docIndex]);
+    public static function deleteAll() {
+        $docIndex = Elasticsearch_Config::index();
+        $params = ['index' => $docIndex];
+        if(self::client()->indices()->exists($params)) {
+            self::client()->indices()->delete($params);
         }
     }
 
     /**
      * Deletes an item from the index.
      *
-     * @param $docIndex
      * @param $item
      */
-    public static function deleteItem($docIndex, $item) {
+    public static function deleteItem($item) {
+        $docIndex = Elasticsearch_Config::index();
         $doc = new Elasticsearch_Document($docIndex, 'item', $item->id);
         self::client()->delete($doc->getParams());
     }
@@ -191,6 +192,6 @@ class Elasticsearch_Helper_Index {
      * @return \Elasticsearch\Client
      */
     public static function client() {
-	    return Elasticsearch\ClientBuilder::create()->build();
+        return Elasticsearch_Client::create();
     }
 }
