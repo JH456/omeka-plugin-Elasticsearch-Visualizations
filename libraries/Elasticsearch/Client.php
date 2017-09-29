@@ -19,16 +19,25 @@ class Elasticsearch_Client {
     public static function create() {
         $config = Elasticsearch_Config::load();
         $builder = Elasticsearch\ClientBuilder::create();
+
+        // Hosts
         $hosts = self::getHosts();
         if(isset($hosts)) {
             $builder->setHosts($hosts);
         }
-        if($config->get('aws_elasticsearch', false)) {
+
+        // Handler -- to add auth headers
+        if('aws' === $config->get('service_provider', '')) {
             $builder->setHandler(self::getAwsHandler([
-                'region' => $config->get('aws_region', 'us-east-1')
+                'region' => $config->get('aws.region', 'us-east-1'),
+                'key'    => $config->get('aws.key', null),
+                'secret' => $config->get('aws.secret', null),
             ]));
         }
+
+        // Build client
         $client = $builder->build();
+
         return $client;
     }
 
@@ -71,7 +80,7 @@ class Elasticsearch_Client {
      * @return Closure
      */
     public static function getAwsHandler($options = [], $singleParams = [], $multiParams = []) {
-        $region = isset($options['region']) ? $options['region'] : 'us-east-1';
+        $region = $options['region'] ? $options['region'] : 'us-east-1';
         if(isset($options['key']) && isset($options['secret'])) {
             $creds = new Credentials($options['key'], $options['secret']);
         } else {

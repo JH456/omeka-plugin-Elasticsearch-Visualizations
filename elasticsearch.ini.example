@@ -1,2 +1,7 @@
 index = "omeka"
-aws_elasticsearch = no
+service_provider = ""
+
+[aws]
+key = ""
+secret = ""
+region = "us-east-1"
