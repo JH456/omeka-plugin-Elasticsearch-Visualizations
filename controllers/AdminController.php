@@ -15,11 +15,18 @@ class Elasticsearch_AdminController extends Omeka_Controller_AbstractActionContr
             foreach($form->getValues() as $option => $value) {
                 set_option($option, $value);
             }
-            if(Elasticsearch_Helper_Index::ping()) {
-                $this->_helper->flashMessenger(__('Elasticsearch endpoint is valid.'), 'success');
 
+            try {
+                $pingsuccess = Elasticsearch_Helper_Index::ping();
+            } catch(Exception $e) {
+                $pingsuccess = false;
+                $pingerror = $e->getMessage();
+            }
+
+            if($pingsuccess) {
+                $this->_helper->flashMessenger(__('Elasticsearch endpoint is valid. Ping success.'), 'success');
             } else {
-                $this->_helper->flashMessenger(__('Elasticsearch endpoint does not appear to be valid. Ping failed.'), 'error');
+                $this->_helper->flashMessenger(__('Elasticsearch endpoint does not appear to be valid. Ping failed. '.$pingerror), 'error');
             }
         }
 

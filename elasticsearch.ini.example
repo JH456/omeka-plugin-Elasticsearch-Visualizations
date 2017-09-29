@@ -1,2 +1,2 @@
 index = "omeka"
-aws_role_credentials = "myOmekaRole"
+aws_elasticsearch = no

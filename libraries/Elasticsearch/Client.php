@@ -1,8 +1,14 @@
 <?php
 
-class Elasticsearch_Client {
+use GuzzleHttp\Ring\Client\CurlHandler;
+use GuzzleHttp\Ring\Client\CurlMultiHandler;
+use GuzzleHttp\Ring\Client\Middleware;
+use GuzzleHttp\Psr7\Request;
+use Aws\Signature\SignatureV4;
+use Aws\Credentials\CredentialProvider;
+use Aws\Credentials\Credentials;
 
-    protected static $_credentials = null;
+class Elasticsearch_Client {
 
     /**
      * Builds an instance of the PHP elasticsearch client, ensuring
@@ -11,16 +17,19 @@ class Elasticsearch_Client {
      * @return Elasticsearch\Client
      */
     public static function create() {
-        $client = Elasticsearch\ClientBuilder::create();
+        $config = Elasticsearch_Config::load();
+        $builder = Elasticsearch\ClientBuilder::create();
         $hosts = self::getHosts();
         if(isset($hosts)) {
-            $client->setHosts($hosts);
+            $builder->setHosts($hosts);
         }
-        $connectionParams = self::getConnectionParams();
-        if(isset($connectionParams)) {
-            $client->setConnectionParams($connectionParams);
+        if($config->get('aws_elasticsearch', false)) {
+            $builder->setHandler(self::getAwsHandler([
+                'region' => $config->get('aws_region', 'us-east-1')
+            ]));
         }
-        return $client->build();
+        $client = $builder->build();
+        return $client;
     }
 
     /**
@@ -30,6 +39,11 @@ class Elasticsearch_Client {
      * and uses that. If none has been defined, it will check the config
      * for a list of hosts. Otherwise, it just returns null
      * and the client will use the default host (e.g. localhost:9200).
+     *
+     * Make sure to include the PORT in the host names, for example:
+     *
+     *  - search-domain.us-east-1.es.amazonaws.com:80
+     *  - http://search-domain.us-east-1.es.amazonaws.com:80
      *
      * @return array of hosts in the elasticsearch cluster
      */
@@ -45,52 +59,54 @@ class Elasticsearch_Client {
     }
 
     /**
-     * Returns credentials needed to make requests to the elasticsearch REST endpoints.
+     * Returns an HTTP handler for the \Elasticsearch\ClientBuilder that will
+     * sign AWS requests with the proper credentials.
      *
-     * @return array
+     * Can either provide the AWS 'key' and 'secret' as options, or use the
+     * default provider to locate credentials in the environment.
+     *
+     * @param array $options
+     * @param array $singleParams
+     * @param array $multiParams
+     * @return Closure
      */
-    public static function getCredentials() {
-        if(isset(self::$_credentials)) {
-            return self::$_credentials;
+    public static function getAwsHandler($options = [], $singleParams = [], $multiParams = []) {
+        $region = isset($options['region']) ? $options['region'] : 'us-east-1';
+        if(isset($options['key']) && isset($options['secret'])) {
+            $creds = new Credentials($options['key'], $options['secret']);
+        } else {
+            $provider = CredentialProvider::defaultProvider();
+            $creds = $provider()->wait();
         }
 
-        $config = Elasticsearch_Config::load();
-        if($config->get('aws_role_credentials', false)) {
-            $aws_role = $config->aws_role_credentials;
-            $aws_url = "http://169.254.169.254/latest/meta-data/iam/security-credentials/$aws_role";
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $aws_url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 1);
-            $output = curl_exec($ch);
-            if($output === FALSE) {
-                $err = curl_error($ch);
-                error_log("curl error getting securitiy credentials: $err");
+        $future = null;
+        if (extension_loaded('curl')) {
+            $config = array_merge([ 'mh' => curl_multi_init() ], $multiParams);
+            if (function_exists('curl_reset')) {
+                $default = new CurlHandler($singleParams);
+                $future = new CurlMultiHandler($config);
+            } else {
+                $default = new CurlMultiHandler($config);
             }
-            curl_close($ch);
-            self::$_credentials = json_decode($output, true);
+        } else {
+            throw new \RuntimeException('Elasticsearch-PHP requires cURL, or a custom HTTP handler.');
         }
 
-        return self::$_credentials;
-    }
+        $curlHandler = $future ? Middleware::wrapFuture($default, $future) : $default;
 
-    /**
-     * Returns an array of connectionParams that can be passed to the Elasticsearch\ClientBuilder.
-     *
-     * This is primarily used to set authorization headers required by things like AWS.
-     *
-     * @return array
-     */
-    public static function getConnectionParams() {
-        $params = array(
-            'Content-type' => ['application/json'],
-            'Accept' => ['application/json']
-        );
-        $credentials = self::getCredentials();
-        if(isset($credentials)) {
-            $params['x-amz-security-token'] = $credentials['token'];
-        }
-        return $params;
+        $awsSignedHandler = function (array $request) use ($curlHandler, $region, $creds) {
+            $psr7Request = new Request(
+                $request['http_method'],
+                $request['uri'],
+                $request['headers'],
+                $request['body']
+            );
+            $signer = new SignatureV4('es', $region);
+            $signedRequest = $signer->signRequest($psr7Request, $creds);
+            $request['headers'] = $signedRequest->getHeaders();
+            return $curlHandler($request);
+        };
+
+        return $awsSignedHandler;
     }
 }
