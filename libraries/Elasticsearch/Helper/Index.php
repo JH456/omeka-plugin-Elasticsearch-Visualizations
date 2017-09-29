@@ -17,7 +17,7 @@ class Elasticsearch_Helper_Index {
      * @param $docIndex
      * @return void
      */
-	public static function indexAll($docIndex) {
+    public static function indexAll($docIndex) {
         $docs = self::getItemDocuments($docIndex);
         Elasticsearch_Document::bulkIndex($docs);
     }

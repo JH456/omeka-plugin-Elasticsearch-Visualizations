@@ -4,10 +4,8 @@
 <h1><?php echo __('Search'); ?></h1>
 
 <form id="elasticsearch-search-form">
+    <input type="text" title="<?php echo __('Search keywords') ?>" name="q" value="<?php echo htmlspecialchars(array_key_exists('q', $_GET) ? $_GET['q'] : '', ENT_QUOTES); ?>" />
     <input type="submit" value="Search" />
-    <span class="float-wrap">
-        <input type="text" title="<?php echo __('Search keywords') ?>" name="q" value="<?php echo htmlspecialchars(array_key_exists('q', $_GET) ? $_GET['q'] : '', ENT_QUOTES); ?>" />
-    </span>
 </form>
 
 <div id="elasticsearch-results">

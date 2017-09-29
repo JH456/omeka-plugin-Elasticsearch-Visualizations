@@ -16,4 +16,13 @@ ul.elasticsearch-highlight > li em {
 .elasticsearch-result {
     border-bottom: 1px solid #ccc;
 }
-
+#elasticsearch-results {
+    margin-bottom: 25px;
+}
+#elasticsearch-search-form input[type="text"] {
+    width: 100%;
+    padding: 0.5em;
+}
+#elasticsearch-search-form input[type="text"]:focus {
+    background-color: hsl(60, 100%, 94%);
+}
