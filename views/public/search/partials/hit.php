@@ -19,8 +19,4 @@
         <?php endforeach; ?>
         </ul>
     <?php endif; ?>
-
-    <div class="elasticsearch-record-image" style="float:right;">
-        <?php echo record_image(get_record($hit['_source']['model'], array('id' => $hit['_source']['modelid']))); ?>
-    </div>
 </div>
