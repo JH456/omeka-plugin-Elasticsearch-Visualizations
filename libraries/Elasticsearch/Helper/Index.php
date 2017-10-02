@@ -129,9 +129,12 @@ class Elasticsearch_Helper_Index {
                 ]
             ],
             'highlight' => [
+                'pre_tags' => ['<em>'],
+                'post_tags' => ['</em>'],
+                'order' => 'score',
                 'fields' => [
                     'collection' => new \stdClass(),
-                    'elements.*' => ['fragment_size' => 500, 'number_of_fragments' => 3],
+                    'elements.*' => ['fragment_size' => 400, 'number_of_fragments' => 3],
                     'tags.*'     => new \stdClass()
                 ]
             ]

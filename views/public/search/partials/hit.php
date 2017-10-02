@@ -14,7 +14,7 @@
         <?php foreach($hit['highlight'] as $hl_key => $hl_val): ?>
             <li>
                 <span class="elasticsearch-highlight-field"><?php echo implode(' &gt; ', array_map(function($k) { return ucfirst($k); }, explode('.', $hl_key))); ?>:</span>
-                <?php echo strip_tags(implode("...", $hl_val), '<p><a><i><b>'); ?>
+                <?php echo strip_tags(implode("...", $hl_val), '<p><a><i><b><em>'); ?>
             </li>
         <?php endforeach; ?>
         </ul>
