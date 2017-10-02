@@ -33,6 +33,25 @@ class Elasticsearch_Helper_Index {
     }
 
     /**
+     * Creates an index and initializes mappings.
+     *
+     * @return void
+     */
+    public static function createIndex() {
+        $docIndex = Elasticsearch_Config::index();
+        $params = [
+            'index' => $docIndex,
+            'body' => [
+                'mappings' => [
+                    'item' => self::getItemMapping()
+                ]
+            ]
+        ];
+        return self::client()->indices()->create($params);
+    }
+
+
+    /**
      * Get array of documents to index.
      *
      * @return array of Elasticsearch_Document objects
@@ -99,6 +118,36 @@ class Elasticsearch_Helper_Index {
         $doc->setField('tags', $tags);
 
         return $doc;
+    }
+
+    /**
+     * Returns the mapping for item type documents.
+     *
+     * @return array
+     */
+    public static function getItemMapping() {
+        return [
+            'properties' => [
+                'title' => [
+                    'type' => 'text'
+                ],
+                'collection' => [
+                    'type' => 'text'
+                ],
+                'elements' => [
+                    'type' => 'text'
+                ],
+                'tags' => [
+                    'type' => 'text',
+                    'position_increment_gap' => 100,
+                    'fields' => [
+                        'raw' => [
+                            'type' => 'keyword'
+                        ]
+                    ]
+                ]
+            ]
+        ];
     }
 
     /**

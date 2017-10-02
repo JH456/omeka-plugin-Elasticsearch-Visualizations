@@ -14,23 +14,24 @@
  * Depends on Elasticsearch\ClientBuilder to create and submit the REST requests to the elasticsearch cluster.
  */
 class Elasticsearch_Document {
-    protected $_index;
-    protected $_type;
-    protected $_body;
+    public $id;
+    public $index;
+    public $type;
+    public $body;
 
     public function __construct($docIndex, $docType, $docId=null) {
-        $this->_index = $docIndex;
-        $this->_type = $docType;
-        $this->_id = "{$docType}_{$docId}";
-        $this->_body = [];
+        $this->index = $docIndex;
+        $this->type = $docType;
+        $this->id = "{$docType}_{$docId}";
+        $this->body = [];
     }
 
     public function setFields(array $params = array()) {
-        $this->_body = array_merge($this->_body, $params);
+        $this->body = array_merge($this->body, $params);
     }
 
     public function setField($key, $value) {
-        $this->_body[$key] = $value;
+        $this->body[$key] = $value;
     }
 
     /**
@@ -40,14 +41,14 @@ class Elasticsearch_Document {
      */
     public function getParams() {
         $params = [
-            'index' => $this->_index,
-            'type' => $this->_type,
+            'index' => $this->index,
+            'type' => $this->type,
         ];
         if(isset($this->_id)) {
-            $params['id'] = $this->_id;
+            $params['id'] = $this->id;
         }
-        if(!empty($this->_body)) {
-            $params['body'] = $this->_body;
+        if(!empty($this->body)) {
+            $params['body'] = $this->body;
         }
         return $params;
     }
@@ -91,15 +92,15 @@ class Elasticsearch_Document {
             $doc = $docs[$i];
             $action_and_metadata = [
                 'index' => [
-                    '_index' => $doc->_index,
-                    '_type'  => $doc->_type,
+                    '_index' => $doc->index,
+                    '_type'  => $doc->type,
                 ]
             ];
             if(isset($doc->_id)) {
-                $action_and_metadata['index']['_id'] = $doc->_id;
+                $action_and_metadata['index']['_id'] = $doc->id;
             }
             $params['body'][] = $action_and_metadata;
-            $params['body'][] = $doc->_body;
+            $params['body'][] = $doc->body;
         }
         return $params;
     }
