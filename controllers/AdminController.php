@@ -17,16 +17,13 @@ class Elasticsearch_AdminController extends Omeka_Controller_AbstractActionContr
             }
 
             try {
-                $pingsuccess = Elasticsearch_Helper_Index::ping();
+                $client = Elasticsearch_Client::create(['timeout' => 2]);
+                $res = $client->cat()->health();
+                $msg = "Elasticsearch endpoint health check successful. Cluster status is {$res[0]['status']} with {$res[0]['node.total']} total nodes.";
+                $this->_helper->flashMessenger($msg, 'success');
             } catch(Exception $e) {
-                $pingsuccess = false;
-                $pingerror = $e->getMessage();
-            }
-
-            if($pingsuccess) {
-                $this->_helper->flashMessenger(__('Elasticsearch endpoint is valid. Ping success.'), 'success');
-            } else {
-                $this->_helper->flashMessenger(__('Elasticsearch endpoint does not appear to be valid. Ping failed. '.$pingerror), 'error');
+                $msg = "Elasticsearch endpoint health check failed. Error: ".$e->getMessage();
+                $this->_helper->flashMessenger($msg, 'error');
             }
         }
 

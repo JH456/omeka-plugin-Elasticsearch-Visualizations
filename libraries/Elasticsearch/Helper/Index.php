@@ -104,6 +104,8 @@ class Elasticsearch_Helper_Index {
     /**
      * Executes a search query on an index.
      *
+     * TODO: aggregations/faceting
+     *
      * @param $query
      * @param $options
      * @return array
@@ -161,7 +163,7 @@ class Elasticsearch_Helper_Index {
     public static function deleteAll() {
         $docIndex = Elasticsearch_Config::index();
         $params = ['index' => $docIndex];
-        if(self::client()->indices()->exists($params)) {
+        if(self::client(['nobody' => true])->indices()->exists($params)) {
             self::client()->indices()->delete($params);
         }
     }
@@ -183,7 +185,7 @@ class Elasticsearch_Helper_Index {
      * @return bool True if the server responded to the ping, false otherwise.
      */
     public static function ping() {
-        return self::client()->ping();
+        return self::client(['nobody' => true])->ping();
     }
 
     /**
@@ -191,7 +193,7 @@ class Elasticsearch_Helper_Index {
      *
      * @return \Elasticsearch\Client
      */
-    public static function client() {
-        return Elasticsearch_Client::create();
+    public static function client(array $options = array()) {
+        return Elasticsearch_Client::create($options);
     }
 }

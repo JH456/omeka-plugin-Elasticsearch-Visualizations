@@ -88,10 +88,19 @@ class ElasticsearchPlugin extends Omeka_Plugin_AbstractPlugin {
     }
 
     protected function _setOptions() {
-        set_option('elasticsearch_endpoint', 'http://localhost:9200');
+        $host = Elasticsearch_Config::host();
+        set_option('elasticsearch_host', $host['host']);
+        set_option('elasticsearch_port', $host['port']);
+        set_option('elasticsearch_scheme', $host['scheme']);
+        set_option('elasticsearch_user', $host['user']);
+        set_option('elasticsearch_pass', $host['pass']);
     }
 
     protected function _clearOptions() {
-        delete_option('elasticsearch_endpoint');
+        delete_option('elasticsearch_host');
+        delete_option('elasticsearch_port');
+        delete_option('elasticsearch_scheme');
+        delete_option('elasticsearch_user');
+        delete_option('elasticsearch_pass');
     }
 }

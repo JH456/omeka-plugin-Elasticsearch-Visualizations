@@ -1,12 +1,9 @@
 <?php
 
-use GuzzleHttp\Ring\Client\CurlHandler;
-use GuzzleHttp\Ring\Client\CurlMultiHandler;
-use GuzzleHttp\Ring\Client\Middleware;
-use GuzzleHttp\Psr7\Request;
-use Aws\Signature\SignatureV4;
-use Aws\Credentials\CredentialProvider;
 use Aws\Credentials\Credentials;
+use Aws\Credentials\CredentialProvider;
+use Aws\ElasticsearchService\ElasticsearchPhpHandler;
+use Elasticsearch\ClientBuilder;
 
 class Elasticsearch_Client {
 
@@ -14,11 +11,19 @@ class Elasticsearch_Client {
      * Builds an instance of the PHP elasticsearch client, ensuring
      * that it is configured properly.
      *
+     * @param array $options
      * @return Elasticsearch\Client
      */
-    public static function create() {
-        $config = Elasticsearch_Config::load();
-        $builder = Elasticsearch\ClientBuilder::create();
+    public static function create(array $options = array()) {
+        // Use this to set the CURLOPT_TIMEOUT to limit how long requests may take.
+        $timeout = isset($options['timeout']) ? $options['timeout'] : 90;
+
+        // NOTE: there seems to be an issue with HTTP HEAD requests timing out
+        // unles CURLOPT_NOBODY is set to true. Ideally this should be handled
+        // by the elasticsearch connection object, but for now this is the workaround.
+        $nobody = isset($options['nobody']) ? $options['nobody'] : false;
+
+        $builder = ClientBuilder::create();
 
         // Hosts
         $hosts = self::getHosts();
@@ -26,96 +31,62 @@ class Elasticsearch_Client {
             $builder->setHosts($hosts);
         }
 
-        // Handler -- to add auth headers
-        if('aws' === $config->get('service_provider', '')) {
-            $builder->setHandler(self::getAwsHandler([
-                'region' => $config->get('aws.region', 'us-east-1'),
-                'key'    => $config->get('aws.key', null),
-                'secret' => $config->get('aws.secret', null),
-            ]));
+        // Handler
+        $handler = self::getHandler();
+        if(isset($handler)) {
+            $builder->setHandler($handler);
         }
 
-        // Build client
-        $client = $builder->build();
+        // Connection Params
+        $builder->setConnectionParams([
+            'client' => [
+                'curl' => [CURLOPT_TIMEOUT => $timeout, CURLOPT_NOBODY => $nobody]
+            ]
+        ]);
 
-        return $client;
+        // Return the Client object
+        return $builder->build();
     }
 
     /**
      * Returns an array containing hosts in the elasticsearch cluster.
      *
-     * First checks to see if a host has been defined as an omeka option
-     * and uses that. If none has been defined, it will check the config
-     * for a list of hosts. Otherwise, it just returns null
-     * and the client will use the default host (e.g. localhost:9200).
-     *
-     * Make sure to include the PORT in the host names, for example:
-     *
-     *  - search-domain.us-east-1.es.amazonaws.com:80
-     *  - http://search-domain.us-east-1.es.amazonaws.com:80
-     *
      * @return array of hosts in the elasticsearch cluster
      */
     public static function getHosts() {
-        $config_hosts = Elasticsearch_Config::hosts();
-        $option_host = get_option('elasticsearch_endpoint');
-        if($option_host) {
-            return array($option_host);
-        } else if(is_array($config_hosts) && !empty($config_hosts)) {
-            return $config_hosts;
-        }
-        return null;
+        $host = [
+            'host' => get_option('elasticsearch_host'),
+            'port' => get_option('elasticsearch_port'),
+            'scheme' => get_option('elasticsearch_scheme'),
+            'user' => get_option('elasticsearch_user'),
+            'pass' => get_option('elasticsearch_pass')
+        ];
+        return [$host];
     }
 
     /**
-     * Returns an HTTP handler for the \Elasticsearch\ClientBuilder that will
-     * sign AWS requests with the proper credentials.
+     * Returns an HTTP handler function for use with the Elasticsearch\ClientBuilder.
      *
-     * Can either provide the AWS 'key' and 'secret' as options, or use the
-     * default provider to locate credentials in the environment.
-     *
-     * @param array $options
-     * @param array $singleParams
-     * @param array $multiParams
-     * @return Closure
+     * @return ElasticsearchPhpHandler|null
      */
-    public static function getAwsHandler($options = [], $singleParams = [], $multiParams = []) {
-        $region = $options['region'] ? $options['region'] : 'us-east-1';
-        if(isset($options['key']) && isset($options['secret'])) {
-            $creds = new Credentials($options['key'], $options['secret']);
-        } else {
-            $provider = CredentialProvider::defaultProvider();
-            $creds = $provider()->wait();
+    public static function getHandler() {
+        $config = Elasticsearch_Config::load();
+        $service = $config->get('service', '');
+        $handler = null;
+
+        switch($service) {
+            case 'aws':
+                $provider = null;
+                if(!empty($config->aws->key) && !empty($config->aws->secret)) {
+                    $creds = new Credentials($config->aws->key, $config->aws->secret);
+                    $provider = CredentialProvider::fromCredentials($creds);
+                }
+                $handler = new ElasticsearchPhpHandler($config->aws->region, $provider);
+                break;
+            default:
+                $handler = null;
         }
 
-        $future = null;
-        if (extension_loaded('curl')) {
-            $config = array_merge([ 'mh' => curl_multi_init() ], $multiParams);
-            if (function_exists('curl_reset')) {
-                $default = new CurlHandler($singleParams);
-                $future = new CurlMultiHandler($config);
-            } else {
-                $default = new CurlMultiHandler($config);
-            }
-        } else {
-            throw new \RuntimeException('Elasticsearch-PHP requires cURL, or a custom HTTP handler.');
-        }
-
-        $curlHandler = $future ? Middleware::wrapFuture($default, $future) : $default;
-
-        $awsSignedHandler = function (array $request) use ($curlHandler, $region, $creds) {
-            $psr7Request = new Request(
-                $request['http_method'],
-                $request['uri'],
-                $request['headers'],
-                $request['body']
-            );
-            $signer = new SignatureV4('es', $region);
-            $signedRequest = $signer->signRequest($psr7Request, $creds);
-            $request['headers'] = $signedRequest->getHeaders();
-            return $curlHandler($request);
-        };
-
-        return $awsSignedHandler;
+        return $handler;
     }
 }

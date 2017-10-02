@@ -20,5 +20,6 @@ return array(
     'Elasticsearch\\' => array($vendorDir . '/elasticsearch/elasticsearch/src/Elasticsearch'),
     'Doctrine\\Instantiator\\' => array($vendorDir . '/doctrine/instantiator/src/Doctrine/Instantiator'),
     'DeepCopy\\' => array($vendorDir . '/myclabs/deep-copy/src/DeepCopy'),
+    'Aws\\ElasticsearchService\\' => array($vendorDir . '/jsq/amazon-es-php/src'),
     'Aws\\' => array($vendorDir . '/aws/aws-sdk-php/src'),
 );

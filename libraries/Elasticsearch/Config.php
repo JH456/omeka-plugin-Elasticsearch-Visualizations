@@ -16,8 +16,18 @@ class Elasticsearch_Config {
         return $config->get('index', 'omeka');
     }
 
-    public static function hosts() {
+    public static function host() {
         $config = self::load();
-        return $config->get('hosts', array());
+        $service = $config->get($config->service, null);
+        if(!isset($service)) {
+            throw new Exception("elasticsearch.ini misconfiguration: missing [service] section");
+        }
+        return [
+            'host'   => $service->host,
+            'port'   => $service->port,
+            'scheme' => $service->scheme,
+            'user'   => isset($service->user) ? $service->user : null,
+            'pass'   => isset($service->pass) ? $service->pass : null
+        ];
     }
 }

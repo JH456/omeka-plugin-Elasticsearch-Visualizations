@@ -1,7 +1,17 @@
 index = "omeka"
-service_provider = ""
+service = "default"
+
+[default]
+host = "localhost"
+port = "9200"
+scheme = "http"
+user = ""
+pass = ""
 
 [aws]
 key = ""
 secret = ""
 region = "us-east-1"
+host = "search-domain.us-east-1.es.amazonaws.com"
+port = "443"
+scheme = "https"

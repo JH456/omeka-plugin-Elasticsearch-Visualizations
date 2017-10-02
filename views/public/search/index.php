@@ -10,6 +10,9 @@
 
 <div id="elasticsearch-results">
     <h2>Found <?php echo $results['hits']['total']; ?> results</h2>
+    <?php
+        //echo "<pre>".htmlspecialchars(json_encode($results, JSON_PRETTY_PRINT))."</pre>";
+    ?>
 
     <?php foreach($results['hits']['hits'] as $hit): ?>
         <?php echo $this->partial('search/partials/hit.php', array('hit' => $hit)); ?>

@@ -56,6 +56,7 @@ class ComposerStaticInit2f550284820fdeb9931e411dab4064f8
         ),
         'A' => 
         array (
+            'Aws\\ElasticsearchService\\' => 25,
             'Aws\\' => 4,
         ),
     );
@@ -118,6 +119,10 @@ class ComposerStaticInit2f550284820fdeb9931e411dab4064f8
         'DeepCopy\\' => 
         array (
             0 => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy',
+        ),
+        'Aws\\ElasticsearchService\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/jsq/amazon-es-php/src',
         ),
         'Aws\\' => 
         array (

@@ -1,6 +1,7 @@
 {
     "require": {
         "elasticsearch/elasticsearch": "~5.0",
-        "aws/aws-sdk-php": "^3.36"
+        "aws/aws-sdk-php": "^3.36",
+        "jsq/amazon-es-php": "^0.2.0"
     }
 }
