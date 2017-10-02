@@ -23,10 +23,24 @@ class Elasticsearch_Utils {
      */
     public static function getDocumentUrl($hit) {
         $source = $hit['_source'];
-        if(isset($source['model']) && isset($source['modelid'])) {
-            $record = get_db()->getTable($source['model'])->find($source['modelid']);
+        $record = self::getRecord($hit);
+        if(isset($record)) {
             return record_url($record);
         }
         return '';
+    }
+
+    /**
+     * Returns a record object from an elasticsearch "hit" document.
+     *
+     * @param $hit
+     * @return false|Omeka_Record_AbstractRecord
+     */
+    public static function getRecord($hit) {
+        $source = $hit['_source'];
+        if(isset($source['model']) && isset($source['modelid'])) {
+            return get_db()->getTable($hit['_source']['model'])->find($hit['_source']['modelid']);
+        }
+        return null;
     }
 }

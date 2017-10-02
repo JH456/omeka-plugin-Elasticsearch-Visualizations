@@ -1,8 +1,13 @@
 <div class="elasticsearch-result">
-    <?php $result_url = Elasticsearch_Utils::getDocumentUrl($hit); ?>
+    <?php $record =  Elasticsearch_Utils::getRecord($hit); ?>
+    <?php $result_url = record_url($record); ?>
     <?php $result_title = !empty($hit['_source']['title']) ? $hit['_source']['title'] : __('Untitled'); ?>
 
     <h3><a href="<?php echo $result_url; ?>"><?php echo $result_title; ?></a></h3>
+
+    <div class="elasticsearch-record-image">
+        <?php echo record_image($record, 'thumbnail'); ?>
+    </div>
 
     <?php if(isset($hit['highlight'])): ?>
         <ul class="elasticsearch-highlight">
@@ -14,4 +19,8 @@
         <?php endforeach; ?>
         </ul>
     <?php endif; ?>
+
+    <div class="elasticsearch-record-image" style="float:right;">
+        <?php echo record_image(get_record($hit['_source']['model'], array('id' => $hit['_source']['modelid']))); ?>
+    </div>
 </div>

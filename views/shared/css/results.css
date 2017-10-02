@@ -15,6 +15,11 @@ ul.elasticsearch-highlight > li em {
 }
 .elasticsearch-result {
     border-bottom: 1px solid #ccc;
+    overflow: auto;
+    clear: both;
+}
+.elasticsearch-record-image {
+    float: right;
 }
 #elasticsearch-results {
     margin-bottom: 25px;
