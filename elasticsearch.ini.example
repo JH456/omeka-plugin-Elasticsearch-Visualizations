@@ -9,9 +9,9 @@ user = ""
 pass = ""
 
 [aws]
-key = ""
-secret = ""
-region = "us-east-1"
 host = "search-domain.us-east-1.es.amazonaws.com"
 port = "443"
 scheme = "https"
+region = "us-east-1"
+key = ""
+secret = ""

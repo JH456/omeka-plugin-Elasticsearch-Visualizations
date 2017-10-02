@@ -33,6 +33,11 @@ class Elasticsearch_Document {
         $this->_body[$key] = $value;
     }
 
+    /**
+     * Returns the params to index a single item.
+     *
+     * @return array
+     */
     public function getParams() {
         $params = [
             'index' => $this->_index,
@@ -47,14 +52,43 @@ class Elasticsearch_Document {
         return $params;
     }
 
+    /**
+     * Indexes the document.
+     *
+     * @return client response
+     */
     public function index() {
         $client = Elasticsearch_Client::create();
         return $client->index($this->getParams());
     }
 
-    public static function getBulkParams(array $docs) {
+    /**
+     * Returns the params to bulk index an array of documents.
+     *
+     * @param array $docs
+     * @param int $offset
+     * @param int|null $length
+     * @return array
+     * @throws Exception
+     */
+    public static function getBulkParams(array $docs, int $offset=0, int $length=null) {
+        if($offset < 0 || $length < 0) {
+            throw new Exception("offset less than zero");
+        }
+
+        if(isset($length)) {
+            if($offset + $length > count($docs)) {
+                $end = count($docs);
+            } else {
+                $end = $offset + $length;
+            }
+        } else {
+            $end = count($docs);
+        }
+
         $params = ['body' => []];
-        foreach($docs as $doc) {
+        for($i = $offset; $i < $end; $i++) {
+            $doc = $docs[$i];
             $action_and_metadata = [
                 'index' => [
                     '_index' => $doc->_index,
@@ -70,9 +104,31 @@ class Elasticsearch_Document {
         return $params;
     }
 
-    public static function bulkIndex(array $docs) {
-        $params = self::getBulkParams($docs);
-        $client = Elasticsearch_Client::create();
-        return $client->bulk($params);
+    /**
+     * Bulk indexes an array of documents, divided into batches.
+     *
+     * @param array $docs
+     * @param int $batchSize
+     * @return array
+     */
+    public static function bulkIndex(array $docs, $batchSize=500) {
+        $client = Elasticsearch_Client::create(['timeout' => 90]);
+
+        $timing_start = microtime(true);
+        error_log("Started bulk indexing at $timing_start");
+
+        $responses = array();
+        for($offset = 0; $offset < count($docs); $offset += $batchSize) {
+            $params = self::getBulkParams($docs, $offset, $batchSize);
+            $res = $client->bulk($params);
+            $responses[] = $res;
+        }
+
+        $timing_end = microtime(true);
+        $timing_duration = $timing_end - $timing_start;
+        error_log("Finished bulk indexing at $timing_end");
+        error_log("Bulk indexing took $timing_duration seconds");
+
+        return $responses;
     }
 }

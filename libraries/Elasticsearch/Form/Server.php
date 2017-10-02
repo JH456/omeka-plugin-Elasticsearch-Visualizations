@@ -6,7 +6,7 @@ class Elasticsearch_Form_Server extends Omeka_Form {
 
         // Host
         $this->addElement('text', 'elasticsearch_host', array(
-            'label'         => __('Server Host'),
+            'label'         => __('Host'),
             'description'   => __('The elasticsearch host (e.g. localhost)'),
             'value'         => get_option('elasticsearch_host'),
             'required'      => true,
@@ -15,7 +15,7 @@ class Elasticsearch_Form_Server extends Omeka_Form {
 
         // Port
         $this->addElement('text', 'elasticsearch_port', array(
-            'label'         => __('Server Port'),
+            'label'         => __('Port'),
             'description'   => __('The elasticsearch port (e.g. 9200)'),
             'value'         => get_option('elasticsearch_port'),
             'required'      => true,
@@ -49,6 +49,15 @@ class Elasticsearch_Form_Server extends Omeka_Form {
             'size'          => 20
         ));
 
+        // AWS?
+        $this->addElement('checkbox', 'elasticsearch_aws', array(
+            'label'         => __('Amazon Elasticsearch?'),
+            'description'   => __('Amazon Elasticsearch uses Signature Version 4 to verify/authenticate requests. Check this box to turn on request signing, otherwise leave this unchecked. AWS settings for key, secret, and region should be configured in <em>elasticsearch.ini</em>.'),
+            'value'         => get_option('elasticsearch_aws'),
+            'required'      => true,
+        ));
+
+
         $this->addElement('submit', 'submit', array(
             'label' => __('Save Settings')
         ));
@@ -58,7 +67,8 @@ class Elasticsearch_Form_Server extends Omeka_Form {
             'elasticsearch_port',
             'elasticsearch_scheme',
             'elasticsearch_user',
-            'elasticsearch_pass'
+            'elasticsearch_pass',
+            'elasticsearch_aws',
         ), 'fields');
 
         $this->addDisplayGroup(array('submit'), 'submit_button');

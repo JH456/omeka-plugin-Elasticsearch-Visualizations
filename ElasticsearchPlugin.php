@@ -88,7 +88,9 @@ class ElasticsearchPlugin extends Omeka_Plugin_AbstractPlugin {
     }
 
     protected function _setOptions() {
+        $service = Elasticsearch_Config::service();
         $host = Elasticsearch_Config::host();
+        set_option('elasticsearch_aws', $service == 'aws' ? 1 : 0);
         set_option('elasticsearch_host', $host['host']);
         set_option('elasticsearch_port', $host['port']);
         set_option('elasticsearch_scheme', $host['scheme']);
@@ -97,6 +99,7 @@ class ElasticsearchPlugin extends Omeka_Plugin_AbstractPlugin {
     }
 
     protected function _clearOptions() {
+        delete_option('elasticsearch_aws');
         delete_option('elasticsearch_host');
         delete_option('elasticsearch_port');
         delete_option('elasticsearch_scheme');

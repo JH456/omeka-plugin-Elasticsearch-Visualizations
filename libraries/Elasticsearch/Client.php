@@ -70,23 +70,15 @@ class Elasticsearch_Client {
      * @return ElasticsearchPhpHandler|null
      */
     public static function getHandler() {
-        $config = Elasticsearch_Config::load();
-        $service = $config->get('service', '');
-        $handler = null;
-
-        switch($service) {
-            case 'aws':
-                $provider = null;
-                if(!empty($config->aws->key) && !empty($config->aws->secret)) {
-                    $creds = new Credentials($config->aws->key, $config->aws->secret);
-                    $provider = CredentialProvider::fromCredentials($creds);
-                }
-                $handler = new ElasticsearchPhpHandler($config->aws->region, $provider);
-                break;
-            default:
-                $handler = null;
+        if(get_option('elasticsearch_aws')) {
+            $provider = null;
+            $config = Elasticsearch_Config::load();
+            if(!empty($config->aws->key) && !empty($config->aws->secret)) {
+                $creds = new Credentials($config->aws->key, $config->aws->secret);
+                $provider = CredentialProvider::fromCredentials($creds);
+            }
+            return new ElasticsearchPhpHandler($config->aws->region, $provider);
         }
-
-        return $handler;
+        return null;
     }
 }
