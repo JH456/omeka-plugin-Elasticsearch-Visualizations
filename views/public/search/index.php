@@ -3,10 +3,13 @@
 
 <h1><?php echo __('Search'); ?></h1>
 
-<form id="elasticsearch-search-form">
-    <input type="text" title="<?php echo __('Search keywords') ?>" name="q" value="<?php echo htmlspecialchars(array_key_exists('q', $_GET) ? $_GET['q'] : '', ENT_QUOTES); ?>" />
-    <input type="submit" value="Search" />
-</form>
+<div id="elasticsearch-search">
+    <form id="elasticsearch-search-form">
+        <input type="text" title="<?php echo __('Search keywords') ?>" name="q" value="<?php echo htmlspecialchars(array_key_exists('q', $_GET) ? $_GET['q'] : '', ENT_QUOTES); ?>" />
+        <input type="submit" value="Search" />
+    </form>
+</div>
+
 
 <div id="elasticsearch-results">
     <h2>Found <?php echo $results['hits']['total']; ?> results</h2>

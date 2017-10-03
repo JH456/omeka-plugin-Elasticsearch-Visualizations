@@ -23,11 +23,28 @@ ul.elasticsearch-highlight > li em {
 }
 #elasticsearch-results {
     margin-bottom: 25px;
+    clear: both;
+}
+#elasticsearch-search-form input {
+    height: 40px;
+    padding: 0.5em;
+    float: left;
+    width: auto;
 }
 #elasticsearch-search-form input[type="text"] {
-    width: 100%;
-    padding: 0.5em;
+    width: 75%;
+}
+#elasticsearch-search-form input[type="submit"] {
+    width: 100px;
 }
 #elasticsearch-search-form input[type="text"]:focus {
     background-color: hsl(60, 100%, 94%);
+}
+#elasticsearch-search {
+    margin-bottom: 18px;
+    clear: both;
+    overflow: auto;
+}
+#elasticsearch-timing {
+    clear: both;
 }
