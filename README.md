@@ -1,8 +1,8 @@
 # Omeka Elasticsearch Plugin
 
-This plugin integrates [elasticsearch](https://www.elastic.co/products/elasticsearch) with Omeka.
+This plugin integrates [elasticsearch](https://www.elastic.co/products/elasticsearch) with Omeka, overriding the default search. Elasticsearch allows you to take advantage of faceting (aggregations), snippet highlighting, and  advanced full text search capabilities.
 
-## Quickstart
+## Setup
 
 1. Copy the example configuration file: `cp elasticsearch.ini.example elasticsearch.ini`. The default configuration assumes you have elasticsearch running locally on `localhost:9200`.
 2. Install the plugin on the Omeka Admin interface. It will show up on the admin navigation as _Elasticsearch_. 
@@ -10,16 +10,22 @@ This plugin integrates [elasticsearch](https://www.elastic.co/products/elasticse
 4. Index your site content by going to the _Index_ tab and clicking the **Clear and Reindex** button.
 4. Try a search query by using the search bar on the public site. 
 
-## Configuration for AWS Elasticsearch
+## Configuration
 
-Host settings are configured in `elasticsearch.ini` along with any credentials required to connect to the service. To connect to [AWS Elasticsearch](https://aws.amazon.com/elasticsearch-service/), set the service property to **aws** and then configure that section as shown below.
+### Configuration for local Elasticsearch
 
-Note that you can specify your AWS access key/secret, or if omitted, the plugin will attempt to load the credentials from the environment automatically. This is useful if you want to take advantage of role-based policies.
+The default settings should be sufficient to connect to a local installation of Elasticsearch running on port 9200. Simply copy the example config file and install the plugin as described in the _Setup_ section. 
 
-Example:
+### Configuration for AWS Elasticsearch
+
+Host settings and credentials for connecting to [AWS Elasticsearch](https://aws.amazon.com/elasticsearch-service/) are configured in `elasticsearch.ini`. Set `service = "aws"` and then update the `[aws]` section. See example below.
+
+Credentials are used to sign requests with [Signature v4](http://docs.aws.amazon.com/general/latest/gr/signature-version-4.html). You can either hard-code the AWS access key and secret, or you can leave them blank and the plugin will attempt to load them from the environment (e.g. ENV variables, AWS profile, etc). If you are using IAM roles to control access, then  leave the key/secret blank.
+
+Example Configuration:
 
 ```ini
-index = "my_omeka_site_index"
+index = "history123"
 service = "aws"
 
 [default]
