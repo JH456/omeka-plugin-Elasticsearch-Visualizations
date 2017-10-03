@@ -2,6 +2,11 @@
 
 This plugin integrates [elasticsearch](https://www.elastic.co/products/elasticsearch) with Omeka, overriding the default search. Elasticsearch allows you to take advantage of faceting (aggregations), snippet highlighting, and  advanced full text search capabilities.
 
+## Requirements
+
+- **PHP Version**: This plugin assumes PHP v7.x. Not tested against PHP v5.x. 
+- **PHP Modules**: Requires cURL to be installed.
+
 ## Setup
 
 1. Copy the example configuration file: `cp elasticsearch.ini.example elasticsearch.ini`. The default configuration assumes you have elasticsearch running locally on `localhost:9200`.
