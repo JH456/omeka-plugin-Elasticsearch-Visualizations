@@ -211,10 +211,12 @@ class Elasticsearch_Helper_Index {
             ];
         } else {
             $must_query = [
-                'query' => $terms,
-                'fields' => ['title', 'collection', 'itemType', 'elements*', 'tags*'],
-                'type' => 'cross_fields',
-                'operator' => 'and'
+                'multi_match' => [
+                    'query' => $terms,
+                    'fields' => ['title', 'collection', 'itemType', 'elements*', 'tags*'],
+                    'type' => 'cross_fields',
+                    'operator' => 'and'
+                ]
             ];
         }
         $body['query']['bool']['must'] = $must_query;
