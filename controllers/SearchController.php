@@ -56,7 +56,7 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
 
     private function _getSearchQueryString() {
         $query = $this->_getSearchParams();
-        $querystr = "?q={$query['q']}";
+        $querystr = "?q=".urlencode($query['q']);
         foreach($query['facets'] as $facet_name => $facet_values) {
             if(is_array($facet_values)) {
                 foreach($facet_values as $k => $v) {
