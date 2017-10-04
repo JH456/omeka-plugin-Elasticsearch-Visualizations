@@ -33,7 +33,9 @@ class Elasticsearch_Helper_Index {
     }
 
     /**
-     * Creates an index and initializes mappings.
+     * Creates an index.
+     *
+     * Use this to initialize mappings and other settings on the index.
      *
      * @return void
      */
@@ -41,11 +43,7 @@ class Elasticsearch_Helper_Index {
         $docIndex = Elasticsearch_Config::index();
         $params = [
             'index' => $docIndex,
-            'body' => [
-                'mappings' => [
-                    'item' => self::getItemMapping()
-                ]
-            ]
+            'body' => []
         ];
         return self::client()->indices()->create($params);
     }
@@ -121,39 +119,7 @@ class Elasticsearch_Helper_Index {
     }
 
     /**
-     * Returns the mapping for item type documents.
-     *
-     * @return array
-     */
-    public static function getItemMapping() {
-        return [
-            'properties' => [
-                'title' => [
-                    'type' => 'text'
-                ],
-                'collection' => [
-                    'type' => 'text'
-                ],
-                'elements' => [
-                    'type' => 'text'
-                ],
-                'tags' => [
-                    'type' => 'text',
-                    'position_increment_gap' => 100,
-                    'fields' => [
-                        'raw' => [
-                            'type' => 'keyword'
-                        ]
-                    ]
-                ]
-            ]
-        ];
-    }
-
-    /**
-     * Executes a search query on an index.
-     *
-     * TODO: aggregations/faceting
+     * Executes a search query on an index
      *
      * @param $query
      * @param $options

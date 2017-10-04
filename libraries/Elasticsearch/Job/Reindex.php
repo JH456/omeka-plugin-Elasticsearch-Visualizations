@@ -12,7 +12,6 @@ class Elasticsearch_Job_Reindex extends Omeka_Job_AbstractJob {
      */
     public function perform() {
         Elasticsearch_Helper_Index::deleteAll();
-        //Elasticsearch_Helper_Index::createIndex();
         Elasticsearch_Helper_Index::indexAll();
     }
 }
