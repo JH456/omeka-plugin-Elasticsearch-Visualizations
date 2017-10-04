@@ -49,6 +49,32 @@ port = "443"
 scheme = "https"
 ```
 
+An example access policy that allows a `<USER>` to do anything on the elasticsearch domain and a `<ROLE>` to submit any HTTP request might look like this:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": ["arn:aws:iam::<ACCOUNT>:user/<USER>"]
+      },
+      "Action": "es:*",
+      "Resource": "arn:aws:es:<REGION>:<ACCOUNT>:domain/<DOMAIN>/*"
+    },
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": ["arn:aws:iam::<ACCOUNT>:role/<ROLE>"]
+      },
+      "Action": "es:ESHttp*",
+      "Resource": "arn:aws:es:<REGION>:<ACCOUNT>:domain/<DOMAIN>/*"
+    }
+  ]
+}
+```
+
 ## Unit Tests
 
 1. Follow the [getting started instructions](https://phpunit.de/getting-started.html) to download and install _phpunit_. 
