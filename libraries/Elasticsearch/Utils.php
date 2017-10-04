@@ -43,4 +43,25 @@ class Elasticsearch_Utils {
         }
         return null;
     }
+
+    /**
+     * Returns a search URL with the query string and given param/value added.
+     *
+     * @return string
+     */
+    public static function getUrlWithQuery($querystr, $param, $value) {
+        $base_url = get_view()->url('/elasticsearch');
+        switch($param) {
+            case 'facet_tags':
+                $item = urlencode("{$param}[]")."=".urlencode($value);
+                break;
+            default:
+                $item = "$param=".urlencode($value);
+                break;
+        }
+        if(strpos($querystr, $item) === FALSE) {
+            return "$base_url?$querystr&$item";
+        }
+        return "$base_url?$querystr";
+    }
 }

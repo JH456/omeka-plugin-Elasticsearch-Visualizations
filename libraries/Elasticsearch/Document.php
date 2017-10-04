@@ -14,16 +14,17 @@
  * Depends on Elasticsearch\ClientBuilder to create and submit the REST requests to the elasticsearch cluster.
  */
 class Elasticsearch_Document {
-    public $id;
-    public $index;
-    public $type;
-    public $body;
+    public $id = null;
+    public $index = '';
+    public $type = '';
+    public $body = [];
 
     public function __construct($docIndex, $docType, $docId=null) {
         $this->index = $docIndex;
         $this->type = $docType;
-        $this->id = "{$docType}_{$docId}";
-        $this->body = [];
+        if($docId) {
+            $this->id = "{$docType}_{$docId}";
+        }
     }
 
     public function setFields(array $params = array()) {
@@ -44,7 +45,7 @@ class Elasticsearch_Document {
             'index' => $this->index,
             'type' => $this->type,
         ];
-        if(isset($this->_id)) {
+        if(isset($this->id)) {
             $params['id'] = $this->id;
         }
         if(!empty($this->body)) {
@@ -96,7 +97,7 @@ class Elasticsearch_Document {
                     '_type'  => $doc->type,
                 ]
             ];
-            if(isset($doc->_id)) {
+            if(isset($doc->id)) {
                 $action_and_metadata['index']['_id'] = $doc->id;
             }
             $params['body'][] = $action_and_metadata;

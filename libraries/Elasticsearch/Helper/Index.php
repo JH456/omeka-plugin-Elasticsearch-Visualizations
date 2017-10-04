@@ -159,23 +159,21 @@ class Elasticsearch_Helper_Index {
      * @param $options
      * @return array
      */
-    public static function search($query, $options) {
+    public static function search($options) {
         $docIndex = Elasticsearch_Config::index();
-        $only_public_items = $options['only_public_items'];
-        $offset = $options['offset'];
-        $limit = $options['limit'];
+        if(!isset($options['query']) || !is_array($options['query'])) {
+            throw new Exception("Query parameter is required to execute elasticsearch query.");
+        }
+        $offset = isset($options['offset']) ? $options['offset'] : 0;
+        $limit = isset($options['limit']) ? $options['limit'] : 20;
+        $showNotPublic = isset($options['showNotPublic']) ? $options['showNotPublic'] : false;
+        $terms = isset($options['query']['q']) ? $options['query']['q'] : '';
+        $facets = isset($options['query']['facets']) ? $options['query']['facets'] : [];
 
+        // Main body of query
         $body = [
             'query' => [
-                'bool' => [
-                    'must' => [
-                        'multi_match' => [
-                            'query' => $query,
-                            'fields' => ['title', 'collection', 'itemType', 'elements.*', 'tags.*'],
-                            'type' => 'best_fields'
-                        ]
-                    ]
-                ]
+                'bool' => [],
             ],
             'highlight' => [
                 'pre_tags' => ['<em>'],
@@ -186,13 +184,57 @@ class Elasticsearch_Helper_Index {
                     'elements.*' => ['fragment_size' => 400, 'number_of_fragments' => 3],
                     'tags.*'     => new \stdClass()
                 ]
+            ],
+            'aggregations' => [
+                'tags' => [
+                    'terms' => [
+                        'field' => 'tags.keyword'
+                    ]
+                ],
+                'collection' => [
+                    'terms' => [
+                        'field' => 'collection.keyword'
+                    ]
+                ],
+                'itemType' => [
+                    'terms' => [
+                        'field' => 'itemType.keyword'
+                    ]
+                ]
             ]
         ];
 
-        if($only_public_items) {
-            $body['query']['bool']['filter'] = [
-                'term' => ['public' => 'true']
+        // Add must query
+        if(empty($terms)) {
+            $must_query = [
+                'match_all' => new \stdClass()
             ];
+        } else {
+            $must_query = [
+                'query' => $terms,
+                'fields' => ['title', 'collection', 'itemType', 'elements*', 'tags*'],
+                'type' => 'cross_fields',
+                'operator' => 'and'
+            ];
+        }
+        $body['query']['bool']['must'] = $must_query;
+
+            // Add filters
+        $filters = [];
+        if(!$showNotPublic) {
+            $filters[] = ['term' => ['public' => true]];
+        }
+        if(isset($facets['tags'])) {
+            $filters[] = ['terms' => ['tags.keyword' => $facets['tags']]];
+        }
+        if(isset($facets['collection'])) {
+            $filters[] = ['term' => ['collection.keyword' => $facets['collection']]];
+        }
+        if(isset($facets['itemType'])) {
+            $filters[] = ['term' => ['itemType.keyword' => $facets['itemType']]];
+        }
+        if(count($filters) > 0) {
+            $body['query']['bool']['filter'] = $filters;
         }
 
         $params = [
@@ -201,7 +243,7 @@ class Elasticsearch_Helper_Index {
             'size' => $limit,
             'body' => $body
         ];
-        error_log("elasticsearch search params: ".var_export($params,1));
+        error_log("elasticsearch search params: ".var_export($params['body']['query'],1));
 
         return self::client()->search($params);
     }

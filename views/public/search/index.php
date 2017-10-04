@@ -10,19 +10,33 @@
     </form>
 </div>
 
+<?php
+//echo "<pre>".htmlspecialchars(json_encode($results, JSON_PRETTY_PRINT))."</pre>";
+?>
 
-<div id="elasticsearch-results">
+<?php if($results): ?>
     <h2>Found <?php echo $results['hits']['total']; ?> results</h2>
-    <?php
-        //echo "<pre>".htmlspecialchars(json_encode($results, JSON_PRETTY_PRINT))."</pre>";
-    ?>
 
-    <?php foreach($results['hits']['hits'] as $hit): ?>
-        <?php echo $this->partial('search/partials/hit.php', array('hit' => $hit)); ?>
-    <?php endforeach; ?>
+    <section id="elasticsearch-aggregations">
+        <?php echo $this->partial('search/partials/aggregations.php', array('querystr' => $querystr, 'aggregations' => $results['aggregations'])); ?>
+    </section>
+    <section id="elasticsearch-results">
+        <?php foreach($results['hits']['hits'] as $hit): ?>
+            <?php echo $this->partial('search/partials/hit.php', array('hit' => $hit)); ?>
+        <?php endforeach; ?>
 
-    <small>Search query executed in <?php echo $results['took']; ?> milliseconds.</small>
-</div>
+        <div style="margin-bottom:18px;">
+            <small>Search query executed in <?php echo $results['took']; ?> milliseconds.</small>
+        </div>
+        <?php echo pagination_links(); ?>
+    </section>
 
-<?php echo pagination_links(); ?>
+<?php else: ?>
+    <section>
+        <h2>Search failed</h2>
+        <p>An error occurred while executing the search.</p>
+    </section>
+<?php endif;  ?>
+
+
 <?php echo foot();

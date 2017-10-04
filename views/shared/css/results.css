@@ -48,3 +48,27 @@ ul.elasticsearch-highlight > li em {
 #elasticsearch-timing {
     clear: both;
 }
+#elasticsearch-aggregations {
+    float: left;
+    width: 300px;
+    margin: 0;
+    padding: 10px;
+}
+#elasticsearch-results {
+    float: left;
+    clear: right;
+    width: calc(100% - 340px);
+    margin: 0;
+    padding: 10px;
+}
+
+@media screen and (max-width: 960px) {
+    #elasticsearch-aggregations {
+        float: none;
+        width: auto;
+    }
+    #elasticsearch-results {
+        float: none;
+        width: auto;
+    }
+}

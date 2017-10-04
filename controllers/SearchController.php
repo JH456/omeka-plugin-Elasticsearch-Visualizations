@@ -14,23 +14,59 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
         $start = ($page - 1) * $limit;
         $user = $this->getCurrentUser();
 
-        // determine whether we can show "not public" (e.g. private) items
-        $can_view_private_items = $user && is_allowed('Items', 'showNotPublic');
-        $only_public_items = !$can_view_private_items;
+        // collect query parameters
+        $query = $this->_getSearchParams();
+        $querystr = $this->_getSearchQueryString();
 
         // execute query
-        $results = Elasticsearch_Helper_Index::search($this->_request->q, [
-            'offset' => $start,
-            'limit' => $limit,
-            'only_public_items' => $only_public_items
-        ]);
+        $results = null;
+        try {
+            $results = Elasticsearch_Helper_Index::search([
+                'query'             => $query,
+                'offset'            => $start,
+                'limit'             => $limit,
+                'showNotPublic'     => $user && is_allowed('Items', 'showNotPublic')
+            ]);
 
-        Zend_Registry::set('pagination', [
-            'per_page'      => $limit,
-            'page'          => $page,
-            'total_results' => $results['hits']['total']
-        ]);
+            Zend_Registry::set('pagination', [
+                'per_page' => $limit,
+                'page' => $page,
+                'total_results' => $results['hits']['total']
+            ]);
+        } catch(Exception $e) {
+            error_log($e->getMessage());
+        }
 
+        $this->view->assign('querystr', $querystr);
         $this->view->assign('results', $results);
     }
+
+    private function _getSearchParams() {
+        $query = [
+            'q'      => $this->_request->q, // search terms
+            'facets' => []                  // facets to filter the search results
+        ];
+        foreach($this->_request->getQuery() as $k => $v) {
+            if(strpos($k, 'facet_') === 0) {
+                $query['facets'][substr($k, strlen('facet_'))] = $v;
+            }
+        }
+        return $query;
+    }
+
+    private function _getSearchQueryString() {
+        $query = $this->_getSearchParams();
+        $querystr = "?q={$query['q']}";
+        foreach($query['facets'] as $facet_name => $facet_values) {
+            if(is_array($facet_values)) {
+                foreach($facet_values as $k => $v) {
+                    $querystr .= '&'.urlencode("facet_{$facet_name}[]").'='.urlencode($v);
+                }
+            } else {
+                $querystr .= '&'.urlencode("facet_{$facet_name}").'='.urlencode($facet_values);
+            }
+        }
+        return $querystr;
+    }
+
 }
