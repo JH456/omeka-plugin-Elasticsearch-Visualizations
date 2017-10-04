@@ -1,21 +1,38 @@
 <?php
-$aggregation_names = array(
+$aggregation_labels = array(
     'itemType'   => 'Item Types',
     'collection' => 'Collections',
     'tags'       => 'Tags'
 );
+$querystr = Elasticsearch_Utils::getQueryString($query);
+$applied_facets = $query['facets'];
 ?>
 
-<?php foreach($aggregation_names as $agg_name => $agg_display_name): ?>
-    <h3><?php echo $agg_display_name; ?></h3>
+<?php if(count($applied_facets) > 0): ?>
+<div id="elasticsearch-applied-filters">
+<h3>Applied Filters</h3>
+<ul>
+    <?php foreach($applied_facets as $facet_name => $facet_values): ?>
+        <?php $facet_label = $aggregation_labels[$facet_name]; ?>
+        <?php $facet_value = is_array($facet_values) ? implode(', ', $facet_values) : $facet_values; ?>
+        <li><?php echo "$facet_label = <i>$facet_value</i>"; ?></li>
+    <?php endforeach ?>
+</ul>
+</div>
+<?php endif; ?>
+
+
+<div id="elasticsearch-filters">
+<h3>Filters</h3>
+<?php foreach($aggregation_labels as $agg_name => $agg_label): ?>
+    <?php echo $agg_label; ?>
     <ul>
         <?php foreach($aggregations[$agg_name]['buckets'] as $agg): ?>
+            <?php $facet_url = Elasticsearch_Utils::getFacetUrl($querystr, $agg_name, $agg['key']); ?>
             <li>
-                <a href="<?php echo Elasticsearch_Utils::getFacetUrl($querystr, $agg_name, $agg['key']); ?>">
-                    <?php echo $agg['key'] ." (".$agg['doc_count'].")"; ?>
-                </a>
+                <a href="<?php echo $facet_url; ?>"><?php echo htmlspecialchars($agg['key']) ." (".$agg['doc_count'].")"; ?></a>
             </li>
         <?php endforeach; ?>
     </ul>
 <?php endforeach; ?>
-
+</div>

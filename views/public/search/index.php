@@ -17,10 +17,10 @@
 <?php if($results): ?>
     <h2>Found <?php echo $results['hits']['total']; ?> results</h2>
 
-    <section id="elasticsearch-aggregations">
+    <section id="elasticsearch-sidebar">
         <?php
         echo $this->partial('search/partials/aggregations.php', array(
-                'querystr'     => Elasticsearch_Utils::getQueryString($query),
+                'query'        => $query,
                 'aggregations' => $results['aggregations'])
         );
         ?>

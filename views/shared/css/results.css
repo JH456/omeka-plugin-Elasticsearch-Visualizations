@@ -48,11 +48,15 @@ ul.elasticsearch-highlight > li em {
 #elasticsearch-timing {
     clear: both;
 }
-#elasticsearch-aggregations {
+#elasticsearch-sidebar {
     float: left;
     width: 300px;
     margin: 0;
     padding: 10px;
+}
+#elasticsearch-applied-filters {
+}
+#elasticsearch-filters {
 }
 #elasticsearch-results {
     float: left;
@@ -63,7 +67,7 @@ ul.elasticsearch-highlight > li em {
 }
 
 @media screen and (max-width: 960px) {
-    #elasticsearch-aggregations {
+    #elasticsearch-sidebar {
         float: none;
         width: auto;
     }
