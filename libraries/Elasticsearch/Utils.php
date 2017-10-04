@@ -72,7 +72,7 @@ class Elasticsearch_Utils {
     public static function getQueryString($query) {
         $terms = isset($query['q']) ? $query['q'] : '';
         $facets = isset($query['facets']) ? $query['facets'] : array();
-        $querystr = "?q=".urlencode($terms);
+        $querystr = "q=".urlencode($terms);
 
         foreach($facets as $facet_name => $facet_values) {
             if(is_array($facet_values)) {
