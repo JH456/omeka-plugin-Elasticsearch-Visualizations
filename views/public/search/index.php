@@ -18,8 +18,14 @@
     <h2>Found <?php echo $results['hits']['total']; ?> results</h2>
 
     <section id="elasticsearch-aggregations">
-        <?php echo $this->partial('search/partials/aggregations.php', array('querystr' => $querystr, 'aggregations' => $results['aggregations'])); ?>
+        <?php
+        echo $this->partial('search/partials/aggregations.php', array(
+                'querystr'     => Elasticsearch_Utils::getQueryString($query),
+                'aggregations' => $results['aggregations'])
+        );
+        ?>
     </section>
+
     <section id="elasticsearch-results">
         <?php foreach($results['hits']['hits'] as $hit): ?>
             <?php echo $this->partial('search/partials/hit.php', array('hit' => $hit)); ?>

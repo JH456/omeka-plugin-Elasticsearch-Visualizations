@@ -45,23 +45,45 @@ class Elasticsearch_Utils {
     }
 
     /**
-     * Returns a search URL with the query string and given param/value added.
+     * Returns a facet search URL.
      *
      * @return string
      */
-    public static function getUrlWithQuery($querystr, $param, $value) {
+    public static function getFacetUrl($querystr, $param, $value) {
         $base_url = get_view()->url('/elasticsearch');
-        switch($param) {
-            case 'facet_tags':
-                $item = urlencode("{$param}[]")."=".urlencode($value);
-                break;
-            default:
-                $item = "$param=".urlencode($value);
-                break;
+        $param_is_array = in_array($param, array('tags'));
+        if($param_is_array) {
+            $item = urlencode("facet_{$param}[]")."=".urlencode($value);
+        } else {
+            $item = "facet_{$param}=".urlencode($value);
         }
+
         if(strpos($querystr, $item) === FALSE) {
             return "$base_url?$querystr&$item";
         }
         return "$base_url?$querystr";
+    }
+
+    /**
+     * Returns a query string including search terms and facets.
+     *
+     * @return string
+     */
+    public static function getQueryString($query) {
+        $terms = isset($query['q']) ? $query['q'] : '';
+        $facets = isset($query['facets']) ? $query['facets'] : array();
+        $querystr = "?q=".urlencode($terms);
+
+        foreach($facets as $facet_name => $facet_values) {
+            if(is_array($facet_values)) {
+                foreach($facet_values as $k => $v) {
+                    $querystr .= '&'.urlencode("facet_{$facet_name}[]").'='.urlencode($v);
+                }
+            } else {
+                $querystr .= '&'.urlencode("facet_{$facet_name}").'='.urlencode($facet_values);
+            }
+        }
+
+        return $querystr;
     }
 }

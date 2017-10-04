@@ -11,7 +11,7 @@ $aggregation_names = array(
     <ul>
         <?php foreach($aggregations[$agg_name]['buckets'] as $agg): ?>
             <li>
-                <a href="<?php echo Elasticsearch_Utils::getUrlWithQuery($querystr, "facet_$agg_name", $agg['key']); ?>">
+                <a href="<?php echo Elasticsearch_Utils::getFacetUrl($querystr, $agg_name, $agg['key']); ?>">
                     <?php echo $agg['key'] ." (".$agg['doc_count'].")"; ?>
                 </a>
             </li>

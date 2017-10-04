@@ -16,7 +16,6 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
 
         // collect query parameters
         $query = $this->_getSearchParams();
-        $querystr = $this->_getSearchQueryString();
 
         // execute query
         $results = null;
@@ -37,7 +36,7 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
             error_log($e->getMessage());
         }
 
-        $this->view->assign('querystr', $querystr);
+        $this->view->assign('query', $query);
         $this->view->assign('results', $results);
     }
 
@@ -53,20 +52,4 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
         }
         return $query;
     }
-
-    private function _getSearchQueryString() {
-        $query = $this->_getSearchParams();
-        $querystr = "?q=".urlencode($query['q']);
-        foreach($query['facets'] as $facet_name => $facet_values) {
-            if(is_array($facet_values)) {
-                foreach($facet_values as $k => $v) {
-                    $querystr .= '&'.urlencode("facet_{$facet_name}[]").'='.urlencode($v);
-                }
-            } else {
-                $querystr .= '&'.urlencode("facet_{$facet_name}").'='.urlencode($facet_values);
-            }
-        }
-        return $querystr;
-    }
-
 }
