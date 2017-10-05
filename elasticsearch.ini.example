@@ -1,4 +1,10 @@
+; Index where documents will be stored for the omeka site.
 index = "omeka"
+
+; Roles that will allow access to admin controls. 
+roles = "admin,super" 
+
+; Section that defines connection parameters for the elasticsearch cluster. 
 service = "default"
 
 [default]
