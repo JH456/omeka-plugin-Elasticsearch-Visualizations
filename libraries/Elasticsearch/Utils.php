@@ -86,4 +86,14 @@ class Elasticsearch_Utils {
 
         return $querystr;
     }
+
+    /**
+     * Returns true if the user is allowed to access the admin functionality.
+     *
+     * @return boolean
+     */
+    public static function hasAdminPermission() {
+        $user = Zend_Registry::get('bootstrap')->getResource('CurrentUser');
+        return $user && in_array($user->role, Elasticsearch_Config::roles());
+    }
 }

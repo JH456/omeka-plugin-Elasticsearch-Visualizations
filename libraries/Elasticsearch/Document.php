@@ -113,8 +113,8 @@ class Elasticsearch_Document {
      * @param int $batchSize
      * @return array
      */
-    public static function bulkIndex(array $docs, $batchSize=500) {
-        $client = Elasticsearch_Client::create(['timeout' => 90]);
+    public static function bulkIndex(array $docs, $batchSize=500, $timeout=90) {
+        $client = Elasticsearch_Client::create(['timeout' => $timeout]);
 
         $timing_start = microtime(true);
         error_log("Started bulk indexing at $timing_start");

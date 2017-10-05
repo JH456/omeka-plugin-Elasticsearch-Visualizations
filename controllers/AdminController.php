@@ -8,7 +8,14 @@
  */
 class Elasticsearch_AdminController extends Omeka_Controller_AbstractActionController {
 
+    protected function _handlePermissions() {
+        if(!Elasticsearch_Utils::hasAdminPermission()) {
+            throw new Omeka_Controller_Exception_403;
+        }
+    }
+
     public function serverAction() {
+        $this->_handlePermissions();
         $form = new Elasticsearch_Form_Server();
 
         if($this->_request->isPost() && $form->isValid($_POST)) {
@@ -31,19 +38,20 @@ class Elasticsearch_AdminController extends Omeka_Controller_AbstractActionContr
     }
 
     public function reindexAction() {
-        $this->view->form = new Elasticsearch_Form_Index();
-
+        $this->_handlePermissions();
         if ($this->_request->isPost()) {
             try {
                 $job_dispatcher = Zend_Registry::get('job_dispatcher');
-                $job_dispatcher->send('Elasticsearch_Job_Reindex', array(
-                    'user'     => $this->getCurrentUser(),
-                    'db'       => $this->_helper->db
-                ));
+                $job_dispatcher->setUser($this->getCurrentUser());
+                $job_dispatcher->sendLongRunning('Elasticsearch_Job_Reindex');
                 $this->_helper->flashMessenger(__('Reindexing started.'), 'success');
             } catch (Exception $err) {
                 $this->_helper->flashMessenger($err->getMessage(), 'error');
             }
         }
+
+        $jobs = Elasticsearch_Helper_Index::getReindexJobs();
+        $this->view->assign("jobs", $jobs);
+        $this->view->form = new Elasticsearch_Form_Index();
     }
 }

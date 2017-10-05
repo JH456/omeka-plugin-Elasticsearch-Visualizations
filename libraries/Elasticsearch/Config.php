@@ -35,4 +35,11 @@ class Elasticsearch_Config {
             'pass'   => isset($section->pass) ? $section->pass : null
         ];
     }
+
+    public static function roles() {
+        $config = self::load();
+        $roles = explode(",", $config->get('roles', 'admin,super'));
+        $roles = array_map('trim', $roles);
+        return $roles;
+    }
 }

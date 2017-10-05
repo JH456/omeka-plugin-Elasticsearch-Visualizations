@@ -73,10 +73,12 @@ class ElasticsearchPlugin extends Omeka_Plugin_AbstractPlugin {
     }
 
     public function filterAdminNavigationMain($nav) {
-        $nav[] = array(
-            'label' => __('Elasticsearch'),
-            'uri' => url('elasticsearch/admin/server')
-        );
+        if(Elasticsearch_Utils::hasAdminPermission()) {
+            $nav[] = array(
+                'label' => __('Elasticsearch'),
+                'uri' => url('elasticsearch/admin/server')
+            );
+        }
         return $nav;
     }
 

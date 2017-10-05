@@ -18,7 +18,9 @@ class Elasticsearch_Helper_Index {
      */
     public static function indexAll() {
         $docs = self::getItemDocuments();
-        Elasticsearch_Document::bulkIndex($docs);
+        $batchSize = 500;
+        $timeout = 300;
+        Elasticsearch_Document::bulkIndex($docs, $batchSize, $timeout);
     }
 
     /**
@@ -257,5 +259,27 @@ class Elasticsearch_Helper_Index {
      */
     public static function client(array $options = array()) {
         return Elasticsearch_Client::create($options);
+    }
+
+    /**
+     * Returns the list of reindex jobs that have been processed.
+     *
+     * @return array
+     */
+    public static function getReindexJobs($order_spec='id desc') {
+        $table = get_db()->getTable('Process');
+        $select = $table->getSelect()->order($order_spec);
+        $job_objects = $table->fetchObjects($select);
+
+        $reindex_jobs = array();
+        foreach($job_objects as $job_object) {
+            // Because job args are serialized to a string using some combination of PHP serialize() and json_encode(),
+            // just do a simple string search rather than try to deal with that.
+            if(!empty($job_object->args) && strrpos($job_object->args, 'Elasticsearch_Job_Reindex') !== FALSE) {
+                $reindex_jobs[] = $job_object;
+            }
+        }
+
+        return $reindex_jobs;
     }
 }
