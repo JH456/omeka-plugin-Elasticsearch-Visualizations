@@ -54,10 +54,6 @@ ul.elasticsearch-highlight > li em {
     margin: 0;
     padding: 10px;
 }
-#elasticsearch-applied-filters {
-}
-#elasticsearch-filters {
-}
 #elasticsearch-results {
     float: left;
     clear: right;

@@ -39,7 +39,6 @@ class Elasticsearch_Config {
     public static function roles() {
         $config = self::load();
         $roles = explode(",", $config->get('roles', 'admin,super'));
-        $roles = array_map('trim', $roles);
-        return $roles;
+        return array_map('trim', $roles);
     }
 }

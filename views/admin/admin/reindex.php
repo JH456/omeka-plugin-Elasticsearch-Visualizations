@@ -5,13 +5,14 @@
 <?php echo $this->partial('admin/partials/navigation.php', array('tab' => 'reindex')); ?>
 
 <div id="primary">
-    <h2><?php echo __('Index Items'); ?></h2>
+    <h2><?php echo __('Index'); ?></h2>
     <?php echo flash(); ?>
     <p><?php echo __('Click the button to (re)index the entire site.') ?></p>
     <?php echo $form ?>
-    <h2><?php echo __('Job History'); ?></h2>
-    <p>The table below shows the indexing processes that have been executed by using the <em>Clear and Reindex</em> button.
-        These processes are executed in the background, so you can use this table to check on the status of the indexing process.</p>
+
+    <h2><?php echo __('Jobs'); ?></h2>
+    <p>The table below shows the most recent indexing jobs that have been executed by using the <em>Clear and Reindex</em> button.
+        The jobs are executed in the background, so this table can be used to verify when a job has completed.</p>
     <table>
         <thead>
             <th>Job ID</th>

@@ -262,13 +262,15 @@ class Elasticsearch_Helper_Index {
     }
 
     /**
-     * Returns the list of reindex jobs that have been processed.
+     * Returns the most recent jobs related to reindexing the site.
      *
      * @return array
      */
-    public static function getReindexJobs($order_spec='id desc') {
+    public static function getReindexJobs(array $options=array()) {
+        $limit = isset($options['limit']) ? $options['limit'] : 25;
+        $order = isset($options['order']) ? $options['order'] : 'id desc';
         $table = get_db()->getTable('Process');
-        $select = $table->getSelect()->order($order_spec);
+        $select = $table->getSelect()->limit($limit)->order($order);
         $job_objects = $table->fetchObjects($select);
 
         $reindex_jobs = array();

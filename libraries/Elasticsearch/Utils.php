@@ -44,29 +44,63 @@ class Elasticsearch_Utils {
         return null;
     }
 
+
     /**
-     * Returns a facet search URL.
+     * Adds a facet to a query string.
      *
-     * @return string
+     * Handles logic around facets that are arrays of values such as tags.
+     *
+     * @param $querystr
+     * @param $param The name of the facet parameter (e.g. itemType)
+     * @param $value The value that should associated with the parameter (e.g. "Still Image")
+     * @return string The new query string with the facet added.
      */
-    public static function getFacetUrl($querystr, $param, $value) {
-        $base_url = get_view()->url('/elasticsearch');
-        $param_is_array = in_array($param, array('tags'));
-        if($param_is_array) {
+    public static function addFacetToQuery($querystr, $param, $value) {
+        if(in_array($param, array('tags'))) {
             $item = urlencode("facet_{$param}[]")."=".urlencode($value);
         } else {
             $item = "facet_{$param}=".urlencode($value);
         }
 
         if(strpos($querystr, $item) === FALSE) {
-            return "$base_url?$querystr&$item";
+            return "$querystr&$item";
         }
-        return "$base_url?$querystr";
+        return $querystr;
+    }
+
+    /**
+     * Removes a facet from a given query string and returns the new query string.
+     *
+     * @param $querystr The query string to manipulate.
+     * @param $paramToRemove The name of the facet parameter to remove (e.g. itemType).
+     * @return string The new query string with the facet removed.
+     */
+    public static function removeFacetFromQuery($querystr, $paramToRemove) {
+        $old_items = explode('&', $querystr);
+        $filtered = array();
+        foreach($old_items as $item) {
+            if(strpos($item, $paramToRemove) === FALSE) {
+                $filtered[] = $item;
+            }
+        }
+        return implode('&', $filtered);
+    }
+
+    /**
+     * Returns a facet value as a string.
+     *
+     * When the value is an array, returns the value as a comma-separated string.
+     *
+     * @return string
+     */
+    public static function facetVal2Str($value, $glue=", ") {
+        return is_array($value) ? implode($glue, $value) : $value;
     }
 
     /**
      * Returns a query string including search terms and facets.
      *
+     * @param array $query
      * @return string
      */
     public static function getQueryString($query) {
@@ -90,10 +124,17 @@ class Elasticsearch_Utils {
     /**
      * Returns true if the user is allowed to access the admin functionality.
      *
+     * Super users always have permission, but other roles must be explicitly
+     * allowed.
+     *
      * @return boolean
      */
     public static function hasAdminPermission() {
         $user = Zend_Registry::get('bootstrap')->getResource('CurrentUser');
-        return $user && in_array($user->role, Elasticsearch_Config::roles());
+        if(!$user) {
+            return false;
+        }
+        $roles = array_unique(array_merge(Elasticsearch_Config::roles(), array('super')));
+        return in_array($user->role, $roles);
     }
 }
