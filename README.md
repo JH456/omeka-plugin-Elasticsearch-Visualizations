@@ -1,12 +1,15 @@
 # Omeka Elasticsearch Plugin
 
-This plugin integrates [elasticsearch](https://www.elastic.co/products/elasticsearch) with Omeka, overriding the default search. This plugin is inspired by the excellent [SolrSearch](https://github.com/scholarslab/SolrSearch) plugin. Elasticsearch is similar to Solr in that it allows you to take advantage of faceting (aggregations), snippet highlighting, and  advanced full text search capabilities. 
+This plugin integrates [elasticsearch](https://www.elastic.co/products/elasticsearch) with Omeka, overriding the default search functionality. Inspired by the excellent [SolrSearch](https://github.com/scholarslab/SolrSearch) plugin, elasticsearch is similar to Solr in that it allows you to take advantage of faceting, snippet highlighting, and advanced full text search capabilities. 
 
-This plugin was designed to integrate with [Amazon's Elasticsearch Service](https://aws.amazon.com/elasticsearch-service/), so you don't need to run your own cluster to take advantage of its capabilities. The plugin can be configured to integrate with other Elasticsearch services as well.
+Depending on your needs, you can get up and running with the elasticsearch plugin by going one of these two routes:
+
+1. You can run your own elasticsearch cluster (locally or elsewhere) so you have full control over the service. 
+2. You can interface with an existing service provider, such as [Amazon's Elasticsearch Service](https://aws.amazon.com/elasticsearch-service/). 
 
 ## Requirements
 
-This plugin assumes you are running Omeka v2.5+ and PHP v7.x. It may work with PHP v5.x, but that hasn't been tested.
+Requires Omeka v2.5+ and PHP v7.x. It _may_ work with PHP v5.4+, but is untested.
 
 ## Setup
 
