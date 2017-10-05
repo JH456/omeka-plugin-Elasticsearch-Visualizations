@@ -13,9 +13,9 @@ $applied_facets = $query['facets'];
 <h3>Applied Filters</h3>
 <ul>
     <?php foreach($applied_facets as $facet_name => $facet_values): ?>
-        <?php $facet_label = $aggregation_labels[$facet_name]; ?>
-        <?php $facet_value = is_array($facet_values) ? implode(', ', $facet_values) : $facet_values; ?>
-        <li><?php echo htmlspecialchars("$facet_label = <i>$facet_value</i>"); ?></li>
+        <?php $facet_label = htmlspecialchars($aggregation_labels[$facet_name]); ?>
+        <?php $facet_value = htmlspecialchars(is_array($facet_values) ? implode(', ', $facet_values) : $facet_values); ?>
+        <li><?php echo "$facet_label = <i>$facet_value</i>"; ?></li>
     <?php endforeach ?>
 </ul>
 </div>
