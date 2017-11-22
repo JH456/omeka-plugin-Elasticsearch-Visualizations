@@ -10,28 +10,15 @@ class Elasticsearch_Helper_Index {
      *
      * Types of documents to index include things that can be uniquely referenced via URL. That includes:
      *      - Items
-     *      - TODO: Collections
-     *      - TODO: Exhibits (addon)
-     *      - TODO: Simplepages (addon)
+     *      - TODO: Exhibits
+     *      - TODO: Simplepages
      *
      * @return void
      */
     public static function indexAll() {
-        $docs = self::getItemDocuments();
-        $batchSize = 500;
-        $timeout = 300;
-        Elasticsearch_Document::bulkIndex($docs, $batchSize, $timeout);
-    }
-
-    /**
-     * Indexes a single Item record.
-     *
-     * @param $item
-     * @return array
-     */
-    public static function indexItem($item) {
-	    $doc = self::getItemDocument($item);
-	    return $doc->index();
+        $integrationItems = new Elasticsearch_Integration_Items();
+        $docs = $integrationItems->getDocuments();
+        Elasticsearch_Document::bulkIndex($docs, 500, 300);
     }
 
     /**
@@ -48,76 +35,6 @@ class Elasticsearch_Helper_Index {
             'body' => []
         ];
         return self::client()->indices()->create($params);
-    }
-
-
-    /**
-     * Get array of documents to index.
-     *
-     * @return array of Elasticsearch_Document objects
-     */
-    public static function getItemDocuments() {
-        $db = get_db();
-        $table = $db->getTable('Item');
-        $select = $table->getSelect();
-        $table->applySorting($select, 'id', 'ASC');
-        $items = $table->fetchObjects($select);
-
-        $docs = [];
-        foreach($items as $item) {
-            $docs[] = self::getItemDocument($item);
-        }
-
-        return $docs;
-    }
-
-    /**
-     * Returns an item as a document.
-     *
-     * @param $item
-     * @return Elasticsearch_Document
-     */
-    public static function getItemDocument($item) {
-        $docIndex = Elasticsearch_Config::index();
-        $doc = new Elasticsearch_Document($docIndex, 'item', $item->id);
-        $doc->setFields([
-            'model'     => 'Item',
-            'modelid'   => $item->id,
-            'featured'  => (bool) $item->featured,
-            'public'    => (bool) $item->public,
-            'resulttype'=> 'Item'
-        ]);
-
-        // title:
-        $title = metadata($item, array('Dublin Core', 'Title'));
-        $doc->setField('title', $title);
-
-        // collection:
-        if ($collection = $item->getCollection()) {
-            $doc->setField('collection', metadata($collection, array('Dublin Core', 'Title')));
-        }
-
-        // item type:
-        if ($itemType = $item->getItemType()) {
-            $doc->setField('itemType', $itemType->name);
-        }
-
-        // elements:
-        $elements = [];
-        foreach($item->getAllElementTexts() as $elementText) {
-            $element = $item->getElementById($elementText->element_id);
-            $elements[$element->name] = $elementText->text;
-        }
-        $doc->setField('elements', $elements);
-
-        // tags:
-        $tags = [];
-        foreach ($item->getTags() as $tag) {
-            $tags[] = $tag->name;
-        }
-        $doc->setField('tags', $tags);
-
-        return $doc;
     }
 
     /**
@@ -232,16 +149,6 @@ class Elasticsearch_Helper_Index {
         }
     }
 
-    /**
-     * Deletes an item from the index.
-     *
-     * @param $item
-     */
-    public static function deleteItem($item) {
-        $docIndex = Elasticsearch_Config::index();
-        $doc = new Elasticsearch_Document($docIndex, 'item', $item->id);
-        self::client()->delete($doc->getParams());
-    }
 
     /**
      * Pings the elasticsearch server to see if it is available or not.

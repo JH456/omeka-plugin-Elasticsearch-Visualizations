@@ -15,13 +15,7 @@ class ElasticsearchPlugin extends Omeka_Plugin_AbstractPlugin {
         'install',
         'uninstall',
         'upgrade',
-        'define_routes',
-        'after_save_record',
-        'after_save_item',
-        'after_save_element',
-        'before_delete_record',
-        'before_delete_item',
-        'before_delete_element'
+        'define_routes'
     );
 
     protected $_filters = array(
@@ -31,10 +25,12 @@ class ElasticsearchPlugin extends Omeka_Plugin_AbstractPlugin {
 
     public function hookInstall() {
         $this->_setOptions();
+        Elasticsearch_Integration_Items::doInstall();
     }
 
     public function hookUninstall() {
         $this->_clearOptions();
+        Elasticsearch_Integration_Items::doUninstall();
     }
 
     public function hookUpgrade($args) {
@@ -43,33 +39,6 @@ class ElasticsearchPlugin extends Omeka_Plugin_AbstractPlugin {
     public function hookDefineRoutes($args) {
         $config = new Zend_Config_Ini(ELASTICSEARCH_PLUGIN_DIR.'/routes.ini');
         $args['router']->addConfig($config);
-    }
-
-    public function hookAfterSaveRecord($args) {
-        $record = $args['record'];
-    }
-
-    public function hookAfterSaveItem($args) {
-        $record = $args['record'];
-        Elasticsearch_Helper_Index::indexItem($record);
-    }
-
-    public function hookAfterSaveElement($args) {
-        $record = $args['record'];
-        $insert = $args['insert'];
-    }
-
-    public function hookBeforeDeleteRecord($args) {
-        $record = $args['record'];
-    }
-
-    public function hookBeforeDeleteItem($args) {
-        $record = $args['record'];
-        Elasticsearch_Helper_Index::deleteItem($record);
-    }
-
-    public function hookBeforeDeleteElement($args) {
-        $record = $args['record'];
     }
 
     public function filterAdminNavigationMain($nav) {

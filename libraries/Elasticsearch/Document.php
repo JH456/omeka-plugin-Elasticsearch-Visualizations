@@ -65,6 +65,16 @@ class Elasticsearch_Document {
     }
 
     /**
+     * Deletes the document from the index.
+     *
+     * @return client response
+     */
+    public function delete() {
+        $client = Elasticsearch_Client::create();
+        return $client->delete                  ($this->getParams());
+    }
+
+    /**
      * Returns the params to bulk index an array of documents.
      *
      * @param array $docs
@@ -117,7 +127,8 @@ class Elasticsearch_Document {
         $client = Elasticsearch_Client::create(['timeout' => $timeout]);
 
         $timing_start = microtime(true);
-        error_log("Started bulk indexing at $timing_start");
+        error_log("Starting bulk indexing at $timing_start");
+        error_log("Bulk indexing ".count($docs)." documents in batches of $batchSize with timeout $timeout");
 
         $responses = array();
         for($offset = 0; $offset < count($docs); $offset += $batchSize) {
