@@ -1,13 +1,15 @@
 <div class="elasticsearch-result">
-    <?php $record =  Elasticsearch_Utils::getRecord($hit); ?>
-    <?php $result_url = record_url($record); ?>
-    <?php $result_title = !empty($hit['_source']['title']) ? $hit['_source']['title'] : __('Untitled'); ?>
+    <?php $result_img = $hit['_source']['image']['thumbnail']; ?>
+    <?php $result_url = $hit['_source']['url']; ?>
+    <?php $result_title = !empty($hit['_source']['title']) ? $hit['_source']['title'] : __('Untitled '.$hit['_source']['resulttype']); ?>
 
     <h3><a href="<?php echo $result_url; ?>"><?php echo $result_title; ?></a></h3>
 
+    <?php if($result_img): ?>
     <div class="elasticsearch-record-image">
-        <?php echo record_image($record, 'thumbnail'); ?>
+        <?php echo $result_img; ?>
     </div>
+    <?php endif; ?>
 
     <?php if(isset($hit['highlight'])): ?>
         <ul class="elasticsearch-highlight">

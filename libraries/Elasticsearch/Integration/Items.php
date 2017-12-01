@@ -13,8 +13,8 @@ class Elasticsearch_Integration_Items extends Elasticsearch_Integration_BaseInte
      * @param array $args
      */
     public function hookAfterSaveItem($args) {
-        $this->_log("adding item to index: {$args['record']->id}");
-        $this->indexRecord($args['record']);
+        $this->_log("hookAfterSaveItem: {$args['record']->id}");
+        $this->indexItem($args['record']);
     }
 
     /**
@@ -25,7 +25,7 @@ class Elasticsearch_Integration_Items extends Elasticsearch_Integration_BaseInte
      */
     public function hookAfterDeleteItem($args) {
         $this->_log("deleting item from index: {$args['record']->id}");
-        $this->deleteRecord($args['record']);
+        $this->deleteItem($args['record']);
     }
 
     /**
@@ -34,8 +34,8 @@ class Elasticsearch_Integration_Items extends Elasticsearch_Integration_BaseInte
      * @param $item
      * @return array
      */
-    public function indexRecord($item) {
-        $doc = $this->getDocument($item);
+    public function indexItem($item) {
+        $doc = $this->getItemDocument($item);
         return $doc->index();
     }
 
@@ -44,9 +44,8 @@ class Elasticsearch_Integration_Items extends Elasticsearch_Integration_BaseInte
      *
      * @param $item
      */
-    public function deleteRecord($item) {
-        $docIndex = Elasticsearch_Config::index();
-        $doc = new Elasticsearch_Document($docIndex, 'item', $item->id);
+    public function deleteItem($item) {
+        $doc = new Elasticsearch_Document($this->_docIndex, "item_{$item->id}");
         return $doc->delete();
     }
 
@@ -56,12 +55,15 @@ class Elasticsearch_Integration_Items extends Elasticsearch_Integration_BaseInte
      * @param $item
      * @return Elasticsearch_Document
      */
-    public function getDocument($item) {
-        $docIndex = Elasticsearch_Config::index();
-        $doc = new Elasticsearch_Document($docIndex, 'item', $item->id);
+    public function getItemDocument($item) {
+        $doc = new Elasticsearch_Document($this->_docIndex, "item_{$item->id}");
         $doc->setFields([
             'model'     => 'Item',
             'modelid'   => $item->id,
+            'url'        => "/items/show/{$item->id}",
+            'image'      => array(
+                'thumbnail' => record_image($item, 'thumbnail')
+            ),
             'featured'  => (bool) $item->featured,
             'public'    => (bool) $item->public,
             'resulttype'=> 'Item'
@@ -96,12 +98,8 @@ class Elasticsearch_Integration_Items extends Elasticsearch_Integration_BaseInte
 
         // tags:
         $tags = [];
-        try {
-            foreach ($item->tags as $tag) {
-                $tags[] = $tag->name;
-            }
-        } catch(Omeka_Record_Exception $e) {
-            $this->_log("Error loading tags for item {$item->id}. Error: ".$e->getMessage(), Zend_Log::WARN);
+        foreach ($item->getTags() as $tag) {
+            $tags[] = $tag->name;
         }
         $doc->setField('tags', $tags);
 
@@ -113,7 +111,7 @@ class Elasticsearch_Integration_Items extends Elasticsearch_Integration_BaseInte
      *
      * @return array
      */
-    public function getDocuments() {
+    public function getItemDocuments() {
         $db = get_db();
         $table = $db->getTable('Item');
         $select = $table->getSelect();
@@ -122,9 +120,18 @@ class Elasticsearch_Integration_Items extends Elasticsearch_Integration_BaseInte
 
         $docs = [];
         foreach($items as $item) {
-            $docs[] = $this->getDocument($item);
+            $docs[] = $this->getItemDocument($item);
         }
 
         return $docs;
+    }
+
+    /**
+     * Index all items.
+     */
+    public function indexAll() {
+        $docs = $this->getItemDocuments();
+        $this->_log('indexAll items: '.count($docs));
+        Elasticsearch_Document::bulkIndex($docs);
     }
 }

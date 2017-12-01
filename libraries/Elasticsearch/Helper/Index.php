@@ -7,7 +7,7 @@ class Elasticsearch_Helper_Index {
 
     /**
      * Indexes all content.
-     *
+     *e
      * Types of documents to index include things that can be uniquely referenced via URL. That includes:
      *      - Items
      *      - TODO: Exhibits
@@ -16,9 +16,13 @@ class Elasticsearch_Helper_Index {
      * @return void
      */
     public static function indexAll() {
-        $integrationItems = new Elasticsearch_Integration_Items();
-        $docs = $integrationItems->getDocuments();
-        Elasticsearch_Document::bulkIndex($docs, 500, 300);
+        try {
+            $docIndex = Elasticsearch_Config::index();
+            $integrationMgr = new Elasticsearch_IntegrationManager($docIndex);
+            $integrationMgr->indexAll();
+        } catch(Exception $e) {
+            _log($e, Zend_Log::ERR);
+        }
     }
 
     /**
@@ -96,11 +100,9 @@ class Elasticsearch_Helper_Index {
             ];
         } else {
             $must_query = [
-                'multi_match' => [
+                'query_string' => [
                     'query' => $terms,
-                    'fields' => ['title', 'collection', 'itemType', 'elements*', 'tags*'],
-                    'type' => 'cross_fields',
-                    'operator' => 'and'
+                    'default_field' => '_all'
                 ]
             ];
         }

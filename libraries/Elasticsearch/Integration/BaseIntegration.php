@@ -1,28 +1,24 @@
 <?php
 
 abstract class Elasticsearch_Integration_BaseIntegration {
+    protected $_active = true;
+    protected $_docIndex = null;
     protected $_hooks = array();
     protected $_filters = array();
 
     /**
-     * The initialize hook
+     * Elasticsearch_Integration_BaseIntegration constructor.
+     *
+     * @param $docIndex defines the elasticsearch index to use
+     */
+    public function __construct($docIndex) {
+        $this->_docIndex = $docIndex;
+    }
+
+    /**
+     * Initializes the integration before adding and hooks or filters.
      */
     public function initialize() {
-
-    }
-
-    /**
-     * The install hook
-     */
-    public function install() {
-
-    }
-
-    /**
-     * The uninstall hook
-     */
-    public function uninstall() {
-
     }
 
     /**
@@ -31,16 +27,24 @@ abstract class Elasticsearch_Integration_BaseIntegration {
      * @return boolean
      */
     public function isActive() {
-        return true;
+        return $this->_active;
+    }
+
+    /**
+     * Alias for applyHooksAndFilters method.
+     */
+    public function integrate() {
+        $this->applyHooksAndFilters();
     }
 
     /**
      * Apply all hooks and filters implemented in this integration.
      */
-    public function integrate() {
+    public function applyHooksAndFilters() {
+        $className = get_called_class();
         if ($this->isActive()) {
+            $this->_log("Applying hooks and filters for $className");
             $this->initialize();
-            $className = get_called_class();
             foreach ($this->_hooks as $hook) {
                 add_plugin_hook($hook, array($this, 'hook' . Inflector::camelize($hook)));
             }
@@ -68,17 +72,4 @@ abstract class Elasticsearch_Integration_BaseIntegration {
         _log('Elasticsearch: '.$msg, $logLevel);
     }
 
-    public static function doInstall() {
-        $integrationClass = get_called_class(); // requires PHP 5.3.0 or greater
-        $integration = new $integrationClass();
-        $integration->install();
-        return $integration;
-    }
-
-    public static function doUninstall() {
-        $integrationClass = get_called_class(); // requires PHP 5.3.0 or greater
-        $integration = new $integrationClass();
-        $integration->uninstall();
-        return $integration;
-    }
 }

@@ -23,14 +23,23 @@ class ElasticsearchPlugin extends Omeka_Plugin_AbstractPlugin {
         'search_form_default_action'
     );
 
+    public function __construct() {
+        parent::__construct();
+        $docIndex = Elasticsearch_Config::index();
+        $this->integrationMgr = new Elasticsearch_IntegrationManager($docIndex);
+    }
+
+    public function setUp() {
+        parent::setUp();
+        $this->integrationMgr->applyHooksAndFilters();
+    }
+
     public function hookInstall() {
         $this->_setOptions();
-        Elasticsearch_Integration_Items::doInstall();
     }
 
     public function hookUninstall() {
         $this->_clearOptions();
-        Elasticsearch_Integration_Items::doUninstall();
     }
 
     public function hookUpgrade($args) {
@@ -77,4 +86,5 @@ class ElasticsearchPlugin extends Omeka_Plugin_AbstractPlugin {
         delete_option('elasticsearch_user');
         delete_option('elasticsearch_pass');
     }
+
 }

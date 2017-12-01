@@ -7,7 +7,6 @@
  * bulk using the static methods. At a minimum, each document must specify the following fields:
  *
  * - index: the name of the elasticsearch index to store the document
- * - type: the document type
  * - body: the fields that compose the document
  * - id (optional): the document identifier, otherwise one will be generated
  *
@@ -16,15 +15,12 @@
 class Elasticsearch_Document {
     public $id = null;
     public $index = '';
-    public $type = '';
+    public $type = 'doc';
     public $body = [];
 
-    public function __construct($docIndex, $docType, $docId=null) {
+    public function __construct($docIndex, $docId=null) {
         $this->index = $docIndex;
-        $this->type = $docType;
-        if($docId) {
-            $this->id = "{$docType}_{$docId}";
-        }
+        $this->id = $docId;
     }
 
     public function setFields(array $params = array()) {
@@ -71,7 +67,11 @@ class Elasticsearch_Document {
      */
     public function delete() {
         $client = Elasticsearch_Client::create();
-        return $client->delete                  ($this->getParams());
+        try {
+            $client->delete($this->getParams());
+        } catch(Elasticsearch\Common\Exceptions\Missing404Exception $e) {
+            error_log($e);
+        }
     }
 
     /**
