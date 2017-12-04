@@ -1,25 +1,25 @@
-ul.elasticsearch-highlight {
-    list-style: none;
-}
-ul.elasticsearch-highlight > li {
-    margin-bottom: 0.5em;
-}
-ul.elasticsearch-highlight > li em {
-    background-color: yellow;
-}
-.elasticsearch-highlight-field {
-    display: block;
-    text-transform: uppercase;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
 .elasticsearch-result {
     border-bottom: 1px solid #ccc;
     overflow: auto;
     clear: both;
 }
-.elasticsearch-record-image {
+.elasticsearch-result ul {
+    list-style-type: none;
+    margin: 10px 0 0 0;
+    padding: 0;
+ }
+.elasticsearch-result ul li {
+    margin: 0 0 5px 0;
+}
+.elasticsearch-result-image {
     float: right;
+    padding: 5px;
+    border: 1px solid #ccc;
+}
+.elasticsearch-result-footer {
+    font-style: italic;
+    font-size: 80%;
+    margin-top: 10px;
 }
 #elasticsearch-results {
     margin-bottom: 25px;

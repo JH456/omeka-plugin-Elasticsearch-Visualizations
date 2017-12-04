@@ -122,6 +122,22 @@ class Elasticsearch_Utils {
     }
 
     /**
+     * Truncates a string for display.
+     *
+     * @param string $text the text to truncate
+     * @param int $length the length to truncate to
+     * @param boolean $ellipsis show an ellipsis or not
+     * @return string
+     */
+    public static function truncateText($text, $length, $ellipsis=true) {
+        $truncated = substr($text, 0, $length);
+        if($ellipsis && strlen($truncated) > $length) {
+            return "$truncated...";
+        }
+        return $truncated;
+    }
+
+    /**
      * Returns true if the user is allowed to access the admin functionality.
      *
      * Super users always have permission, but other roles must be explicitly

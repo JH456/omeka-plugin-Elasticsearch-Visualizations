@@ -148,15 +148,21 @@ class Elasticsearch_Integration_Exhibits extends Elasticsearch_Integration_BaseI
      * @return Elasticsearch_Document
      */
     public function getExhibitPageDocument($exhibitPage) {
-        //$exhibit = $exhibitPage->getExhibit();
+        $exhibit = $exhibitPage->getExhibit();
         $doc = new Elasticsearch_Document($this->_docIndex, "exhibit_page_{$exhibitPage->id}");
         $doc->setFields([
             'resulttype' => 'Exhibit',
             'model'      => 'ExhibitPage',
             'modelid'    => $exhibitPage->id,
-            'title'      => $exhibitPage->title,
+            'title'      => $exhibitPage->title
         ]);
 
+        // exhibit:
+        if ($exhibit) {
+            $doc->setField('exhibit', $exhibit->title);
+        }
+
+        // page blocks:
         $pageBlocks = [];
         foreach ($exhibitPage->getPageBlocks() as $pageBlock) {
             $block = array();

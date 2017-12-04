@@ -1,25 +1,26 @@
 <div class="elasticsearch-result">
+<!-- <?php echo json_encode($hit, JSON_PRETTY_PRINT); ?> -->
     <?php $record =  Elasticsearch_Utils::getRecord($hit); ?>
-    <?php $result_img = record_image($record, 'thumbnail'); ?>
+    <?php $model_view = Inflector::underscore($hit['_source']['model']).".php"; ?>
     <?php $result_url = record_url($record); ?>
     <?php $result_title = !empty($hit['_source']['title']) ? $hit['_source']['title'] : __('Untitled '.$hit['_source']['resulttype']); ?>
 
-    <h3><a href="<?php echo $result_url; ?>"><?php echo $result_title; ?></a></h3>
+    <h3><a href="<?php echo $result_url; ?>" title="<?php echo htmlspecialchars($result_title); ?>"><?php echo $result_title; ?></a></h3>
 
-    <?php if($result_img): ?>
-    <div class="elasticsearch-record-image">
-        <?php echo $result_img; ?>
+    <?php
+    try {
+        echo $this->partial("search/partials/models/$model_view", array(
+            'hit' => $hit,
+            'record' => $record,
+            'maxTextLength' => 500
+        ));
+    } catch(Zend_View_Exception $e) {
+        echo "<!-- Missing view: $model_view -->";
+    }
+    ?>
+
+    <div class="elasticsearch-result-footer">
+        Result Type: <?php echo $hit['_source']['resulttype']; ?> Score: <?php echo $hit['_score']; ?>
     </div>
-    <?php endif; ?>
 
-    <?php if(isset($hit['highlight'])): ?>
-        <ul class="elasticsearch-highlight">
-        <?php foreach($hit['highlight'] as $hl_key => $hl_val): ?>
-            <li>
-                <span class="elasticsearch-highlight-field"><?php echo implode(' &gt; ', array_map(function($k) { return ucfirst($k); }, explode('.', $hl_key))); ?>:</span>
-                <?php echo strip_tags(implode("...", $hl_val), '<p><a><i><b><em>'); ?>
-            </li>
-        <?php endforeach; ?>
-        </ul>
-    <?php endif; ?>
 </div>

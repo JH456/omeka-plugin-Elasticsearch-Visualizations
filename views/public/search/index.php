@@ -17,6 +17,7 @@
         <?php endforeach; ?>
         <input type="submit" value="Search" />
     </form>
+
 </div>
 
 <?php

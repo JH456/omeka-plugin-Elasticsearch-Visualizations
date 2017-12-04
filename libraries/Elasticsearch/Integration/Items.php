@@ -63,7 +63,6 @@ class Elasticsearch_Integration_Items extends Elasticsearch_Integration_BaseInte
             'modelid'   => $item->id,
             'featured'  => (bool) $item->featured,
             'public'    => (bool) $item->public
-
         ]);
 
 
@@ -86,7 +85,7 @@ class Elasticsearch_Integration_Items extends Elasticsearch_Integration_BaseInte
         try {
             foreach ($item->getAllElementTexts() as $elementText) {
                 $element = $item->getElementById($elementText->element_id);
-                $elements[$element->name] = $elementText->text;
+                $elements[] = ['name' => $element->name, 'text' => $elementText->text];
             }
         } catch(Omeka_Record_Exception $e) {
             $this->_log("Error loading elements for item {$item->id}. Error: ".$e->getMessage(), Zend_Log::WARN);
