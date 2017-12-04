@@ -1,5 +1,6 @@
 <?php
 $aggregation_labels = array(
+    'resulttype' => 'Result Types',
     'itemType'   => 'Item Types',
     'collection' => 'Collections',
     'tags'       => 'Tags'
@@ -24,7 +25,6 @@ $applied_facets = $query['facets'];
 </ul>
 </section>
 <?php endif; ?>
-
 
 <section>
 <h3>Filters</h3>

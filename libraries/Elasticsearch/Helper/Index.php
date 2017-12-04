@@ -79,6 +79,11 @@ class Elasticsearch_Helper_Index {
                     'terms' => [
                         'field' => 'itemType.keyword'
                     ]
+                ],
+                'resulttype' => [
+                    'terms' => [
+                        'field' => 'resulttype.keyword'
+                    ]
                 ]
             ]
         ];
@@ -111,6 +116,9 @@ class Elasticsearch_Helper_Index {
         }
         if(isset($facets['itemType'])) {
             $filters[] = ['term' => ['itemType.keyword' => $facets['itemType']]];
+        }
+        if(isset($facets['resulttype'])) {
+            $filters[] = ['term' => ['resulttype.keyword' => $facets['resulttype']]];
         }
         if(count($filters) > 0) {
             $body['query']['bool']['filter'] = $filters;

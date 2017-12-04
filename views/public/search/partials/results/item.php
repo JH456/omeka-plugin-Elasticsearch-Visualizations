@@ -4,6 +4,8 @@
 <?php endif; ?>
 
 <ul>
+    <li><b>Result Type:</b> <?php echo $hit['_source']['resulttype']; ?></li>
+
 <?php if(isset($hit['_source']['itemType'])): ?>
     <li><b>Item Type:</b> <?php echo $hit['_source']['itemType']; ?></li>
 <?php endif; ?>
