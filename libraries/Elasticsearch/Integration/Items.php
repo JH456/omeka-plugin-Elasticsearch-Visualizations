@@ -58,15 +58,12 @@ class Elasticsearch_Integration_Items extends Elasticsearch_Integration_BaseInte
     public function getItemDocument($item) {
         $doc = new Elasticsearch_Document($this->_docIndex, "item_{$item->id}");
         $doc->setFields([
+            'resulttype'=> 'Item',
             'model'     => 'Item',
             'modelid'   => $item->id,
-            'url'        => "/items/show/{$item->id}",
-            'image'      => array(
-                'thumbnail' => record_image($item, 'thumbnail')
-            ),
             'featured'  => (bool) $item->featured,
-            'public'    => (bool) $item->public,
-            'resulttype'=> 'Item'
+            'public'    => (bool) $item->public
+
         ]);
 
 

@@ -1,7 +1,7 @@
 <?php
 
 class Elasticsearch_IntegrationManager {
-    protected $_integrations = array('items','exhibits');
+    protected $_integrations = array('items','exhibits', 'simple_pages');
     protected $_docIndex = null;
 
     /**

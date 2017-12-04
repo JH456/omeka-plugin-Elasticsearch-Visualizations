@@ -104,16 +104,12 @@ class Elasticsearch_Integration_Exhibits extends Elasticsearch_Integration_BaseI
             'resulttype' => 'Exhibit',
             'model'      => 'Exhibit',
             'modelid'    => $exhibit->id,
-            'url'        => record_url($exhibit),
-            'image'      => array(
-                'thumbnail' => record_image($exhibit, 'thumbnail')
-            ),
             'featured'   => (bool) $exhibit->featured,
             'public'     => (bool) $exhibit->public,
-
             'title'      => $exhibit->title,
             'description'=> $exhibit->description,
-            'credits'    => $exhibit->credits
+            'credits'    => $exhibit->credits,
+            'slug'       => $exhibit->slug
         ]);
 
         $tags = [];
@@ -158,10 +154,6 @@ class Elasticsearch_Integration_Exhibits extends Elasticsearch_Integration_BaseI
             'resulttype' => 'Exhibit',
             'model'      => 'ExhibitPage',
             'modelid'    => $exhibitPage->id,
-            'url'        => record_url($exhibitPage),
-            'image'      => array(
-                'thumbnail' => record_image($exhibitPage, 'thumbnail')
-            ),
             'title'      => $exhibitPage->title,
         ]);
 

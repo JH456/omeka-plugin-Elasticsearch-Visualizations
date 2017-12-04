@@ -1,6 +1,7 @@
 <div class="elasticsearch-result">
-    <?php $result_img = $hit['_source']['image']['thumbnail']; ?>
-    <?php $result_url = $hit['_source']['url']; ?>
+    <?php $record =  Elasticsearch_Utils::getRecord($hit); ?>
+    <?php $result_img = record_image($record, 'thumbnail'); ?>
+    <?php $result_url = record_url($record); ?>
     <?php $result_title = !empty($hit['_source']['title']) ? $hit['_source']['title'] : __('Untitled '.$hit['_source']['resulttype']); ?>
 
     <h3><a href="<?php echo $result_url; ?>"><?php echo $result_title; ?></a></h3>
