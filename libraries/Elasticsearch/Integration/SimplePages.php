@@ -96,8 +96,6 @@ class Elasticsearch_Integration_SimplePages extends Elasticsearch_Integration_Ba
     public function indexAll() {
         $docs = $this->getSimplePageDocuments();
         $this->_log('indexAll simple pages: '.count($docs));
-        $this->_log(var_export($docs,1));
         Elasticsearch_Document::bulkIndex($docs);
     }
-
 }

@@ -204,8 +204,8 @@ class Elasticsearch_Integration_Exhibits extends Elasticsearch_Integration_BaseI
     public function indexAll() {
         // since this method is intended to be called as a background job, we need to ensure that
         // the exhibit plugin's routes have been loaded so that URLs can be constructed properly
-        $router = Zend_Controller_Front::getInstance()->getRouter();
-        exhibit_builder_define_routes(array('router' => $router));
+        //$router = Zend_Controller_Front::getInstance()->getRouter();
+        //exhibit_builder_define_routes(array('router' => $router));
 
         // index exhibits
         $docs = $this->getExhibitDocuments();
