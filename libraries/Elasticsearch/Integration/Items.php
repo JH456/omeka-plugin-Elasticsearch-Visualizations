@@ -62,7 +62,9 @@ class Elasticsearch_Integration_Items extends Elasticsearch_Integration_BaseInte
             'model'     => 'Item',
             'modelid'   => $item->id,
             'featured'  => (bool) $item->featured,
-            'public'    => (bool) $item->public
+            'public'    => (bool) $item->public,
+            'created'   => $this->_getDate($item->added),
+            'updated'   => $this->_getDate($item->modified),
         ]);
 
 

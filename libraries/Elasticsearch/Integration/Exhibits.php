@@ -109,7 +109,9 @@ class Elasticsearch_Integration_Exhibits extends Elasticsearch_Integration_BaseI
             'title'      => $exhibit->title,
             'description'=> $exhibit->description,
             'credits'    => $exhibit->credits,
-            'slug'       => $exhibit->slug
+            'slug'       => $exhibit->slug,
+            'created'    => $this->_getDate($exhibit->added),
+            'updated'    => $this->_getDate($exhibit->modified)
         ]);
 
         $tags = [];
@@ -154,7 +156,9 @@ class Elasticsearch_Integration_Exhibits extends Elasticsearch_Integration_BaseI
             'resulttype' => 'Exhibit',
             'model'      => 'ExhibitPage',
             'modelid'    => $exhibitPage->id,
-            'title'      => $exhibitPage->title
+            'title'      => $exhibitPage->title,
+            'created'    => $this->_getDate($exhibitPage->added),
+            'updated'    => $this->_getDate($exhibitPage->modified)
         ]);
 
         // exhibit:

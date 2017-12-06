@@ -72,4 +72,16 @@ abstract class Elasticsearch_Integration_BaseIntegration {
         _log('Elasticsearch: '.$msg, $logLevel);
     }
 
+    /**
+     * Format a date string as an ISO 8601 date, UTC timezone.
+     *
+     * @param $date
+     * @return string
+     */
+    protected function _getDate($date) {
+        $date = new DateTime($date);
+        $date->setTimezone(new DateTimeZone('UTC'));
+        return $date->format('c');
+    }
+
 }

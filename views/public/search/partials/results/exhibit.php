@@ -12,5 +12,7 @@
     <?php if(isset($hit['_source']['tags']) && count($hit['_source']['tags']) > 0): ?>
         <li><b>Tags:</b>  <?php echo implode(", ", $hit['_source']['tags']); ?></li>
     <?php endif; ?>
+    <li><b>Created: </b> <?php echo html_escape(Elasticsearch_Utils::formatDate($hit['_source']['created'])); ?></li>
+    <li><b>Updated: </b> <?php echo html_escape(Elasticsearch_Utils::formatDate($hit['_source']['updated'])); ?></li>
 </ul>
 

@@ -138,6 +138,13 @@ class Elasticsearch_Utils {
     }
 
     /**
+     * Formats an ISO8601 date for display.
+     */
+    public static function formatDate($iso8601date) {
+        return date_format(date_create($iso8601date), "F j, Y");
+    }
+
+    /**
      * Returns true if the user is allowed to access the admin functionality.
      *
      * Super users always have permission, but other roles must be explicitly
