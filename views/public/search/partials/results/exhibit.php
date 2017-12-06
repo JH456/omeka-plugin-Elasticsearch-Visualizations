@@ -1,6 +1,6 @@
 <?php $result_img = record_image($record, 'thumbnail', array('class' => 'elasticsearch-result-image')); ?>
 <?php if($result_img): ?>
-    <?php echo $result_img; ?>
+    <a href="<?php echo $record_url; ?>"><?php echo $result_img; ?></a>
 <?php endif; ?>
 
 <ul>

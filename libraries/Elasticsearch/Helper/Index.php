@@ -6,12 +6,7 @@
 class Elasticsearch_Helper_Index {
 
     /**
-     * Indexes all content.
-     *e
-     * Types of documents to index include things that can be uniquely referenced via URL. That includes:
-     *      - Items
-     *      - TODO: Exhibits
-     *      - TODO: Simplepages
+     * Indexes all items and integrated addons such as exhibits and simple pages.
      *
      * @return void
      */
@@ -21,7 +16,7 @@ class Elasticsearch_Helper_Index {
             $integrationMgr = new Elasticsearch_IntegrationManager($docIndex);
             $integrationMgr->indexAll();
         } catch(Exception $e) {
-            _log($e, Zend_Log::ERR);
+            error_log($e, Zend_Log::ERR);
         }
     }
 
