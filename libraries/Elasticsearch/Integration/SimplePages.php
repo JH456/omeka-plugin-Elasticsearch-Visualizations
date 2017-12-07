@@ -64,7 +64,7 @@ class Elasticsearch_Integration_SimplePages extends Elasticsearch_Integration_Ba
             'modelid'    => $simplePage->id,
             'public'     => (bool) $simplePage->is_published,
             'title'      => $simplePage->title,
-            'text'       => $simplePage->text,
+            'pageText'   => $simplePage->text,
             'slug'       => $simplePage->slug,
             'created'    => $this->_getDate($simplePage->inserted),
             'updated'    => $this->_getDate($simplePage->updated)

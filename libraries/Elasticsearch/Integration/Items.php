@@ -65,12 +65,8 @@ class Elasticsearch_Integration_Items extends Elasticsearch_Integration_BaseInte
             'public'    => (bool) $item->public,
             'created'   => $this->_getDate($item->added),
             'updated'   => $this->_getDate($item->modified),
+            'title'     => metadata($item, array('Dublin Core', 'Title'))
         ]);
-
-
-        // title:
-        $title = metadata($item, array('Dublin Core', 'Title'));
-        $doc->setField('title', $title);
 
         // collection:
         if ($collection = $item->getCollection()) {
@@ -83,16 +79,18 @@ class Elasticsearch_Integration_Items extends Elasticsearch_Integration_BaseInte
         }
 
         // elements:
-        $elements = [];
+        $elements = $elementNames = [];
         try {
             foreach ($item->getAllElementTexts() as $elementText) {
                 $element = $item->getElementById($elementText->element_id);
-                $elements[] = ['name' => $element->name, 'text' => $elementText->text];
+                $elements[$element->name] = $elementText->text;
+                $elementNames[] = $element->name;
             }
         } catch(Omeka_Record_Exception $e) {
             $this->_log("Error loading elements for item {$item->id}. Error: ".$e->getMessage(), Zend_Log::WARN);
         }
-        $doc->setField('elements', $elements);
+        $doc->setField('elements', array_unique($elementNames));
+        $doc->setField('element', $elements);
 
         // tags:
         $tags = [];
