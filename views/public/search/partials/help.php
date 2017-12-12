@@ -11,9 +11,19 @@
         </td>
         <td>
             Possible fields you can search by include:
-            <i>title</i>, <i>description</i>, <i>collection</i>, <i>exhibit</i>, <i>itemType</i>, <i>resulttype</i>,
-            <i>featured</i>, and <i>tags</i>, <i>created</i>, <i>updated</i>i>. Examples:
+            <i>title</i>,
+            <i>description</i>,
+            <i>collection</i>,
+            <i>exhibit</i>,
+            <i>itemType</i>,
+            <i>resulttype</i>,
+            <i>featured</i>,
+            <i>tags</i>,
+            <i>created</i>,
+            <i>updated</i>.
             <br><br>
+            Examples:
+            <br>
             <code>title:"Inhabited Spaces"</code><br>
             <code>collection:Map*</code><br>
             <code>itemType:("Historical Map" OR "Still Image")</code><br>
