@@ -173,8 +173,7 @@ class Elasticsearch_Helper_Index {
             'tags' => [
                 'terms' => [
                     'field' => 'tags.keyword',
-                    'size' => 10,
-                    'missing' => 'N/A'
+                    'size' => 15
                 ]
             ],
             'collection' => [
@@ -267,6 +266,7 @@ class Elasticsearch_Helper_Index {
         $showNotPublic = isset($options['showNotPublic']) ? $options['showNotPublic'] : false;
         $terms = isset($options['query']['q']) ? $options['query']['q'] : '';
         $facets = isset($options['query']['facets']) ? $options['query']['facets'] : [];
+        $sort = isset($options['sort']) ? $options['sort'] : null;
 
         // Main body of query
         $body = [
@@ -295,6 +295,15 @@ class Elasticsearch_Helper_Index {
         }
         if(count($filters) > 0) {
             $body['query']['bool']['filter'] = $filters;
+        }
+
+        // Add sorting
+        if(isset($sort) && isset($sort['field'])) {
+            $body['sort'] = array();
+            $body['sort'][0] = array(
+                $sort['field'] => (isset($sort['dir']) ? $sort['dir'] : 'asc')
+            );
+            $body['track_scores'] = true; // otherwise scores won't be computed
         }
 
         $params = [
