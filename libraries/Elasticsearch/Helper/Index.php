@@ -40,87 +40,6 @@ class Elasticsearch_Helper_Index {
     }
 
     /**
-     * Executes a search query on an index
-     *
-     * @param $query
-     * @param $options
-     * @return array
-     */
-    public static function search($options) {
-        $docIndex = Elasticsearch_Config::index();
-        if(!isset($options['query']) || !is_array($options['query'])) {
-            throw new Exception("Query parameter is required to execute elasticsearch query.");
-        }
-        $offset = isset($options['offset']) ? $options['offset'] : 0;
-        $limit = isset($options['limit']) ? $options['limit'] : 20;
-        $showNotPublic = isset($options['showNotPublic']) ? $options['showNotPublic'] : false;
-        $terms = isset($options['query']['q']) ? $options['query']['q'] : '';
-        $facets = isset($options['query']['facets']) ? $options['query']['facets'] : [];
-
-        // Main body of query
-        $body = [
-            'query' => [
-                'bool' => [],
-            ],
-            'aggregations' => self::getAggregations()
-        ];
-
-        // Add must query
-        if(empty($terms)) {
-            $must_query = [
-                'match_all' => new \stdClass()
-            ];
-        } else {
-            $must_query = [
-                'query_string' => [
-                    'query' => $terms,
-                    'default_field' => '_all',
-                    'default_operator' => 'OR'
-                ]
-            ];
-        }
-        $body['query']['bool']['must'] = $must_query;
-
-            // Add filters
-        $filters = [];
-        if(!$showNotPublic) {
-            $filters[] = ['term' => ['public' => true]];
-        }
-
-        if(isset($facets['tags'])) {
-            $filters[] = ['terms' => ['tags.keyword' => $facets['tags']]];
-        }
-        if(isset($facets['collection'])) {
-            $filters[] = ['term' => ['collection.keyword' => $facets['collection']]];
-        }
-        if(isset($facets['exhibit'])) {
-            $filters[] = ['term' => ['exhibit.keyword' => $facets['exhibit']]];
-        }
-        if(isset($facets['itemtype'])) {
-            $filters[] = ['term' => ['itemtype.keyword' => $facets['itemtype']]];
-        }
-        if(isset($facets['resulttype'])) {
-            $filters[] = ['term' => ['resulttype.keyword' => $facets['resulttype']]];
-        }
-        if(isset($facets['featured'])) {
-            $filters[] = ['term' => ['featured' => $facets['featured']]];
-        }
-        if(count($filters) > 0) {
-            $body['query']['bool']['filter'] = $filters;
-        }
-
-        $params = [
-            'index' => $docIndex,
-            'from' => $offset,
-            'size' => $limit,
-            'body' => $body
-        ];
-        error_log("elasticsearch search params: ".var_export($params['body']['query'],1));
-
-        return self::client()->search($params);
-    }
-
-    /**
      * Deletes all items in the elasticsearch index.
      *
      * Assumes that index auto-creation is enabled so that when items are re-indexed,
@@ -178,10 +97,12 @@ class Elasticsearch_Helper_Index {
     }
 
     /**
-     * Returns the field mappings that define the structure of documents
-     * indexed in elasticsearch.
+     * This function defines the field mapping used in the elasticsearch index.
      *
-     * Note that this should cover all integrations (e.g. items, exhibits, etc).
+     * The mapping defines fields common to all types of documents, as well
+     * as fields specific to certain types of integrations (e.g. items, exhibits, etc).
+     *
+     * Integration-specific fields should be mentioned in the comments below.
      *
      * @return array
      */
@@ -201,7 +122,7 @@ class Elasticsearch_Helper_Index {
                     'created'     => ['type' => 'date'],
                     'updated'     => ['type' => 'date'],
                     'tags'        => ['type' => 'keyword'],
-                    'slug'        => ['type' => 'text'],
+                    'slug'        => ['type' => 'keyword'],
 
                     // Item-Specific
                     'collection' => ['type' => 'text'],
@@ -232,6 +153,8 @@ class Elasticsearch_Helper_Index {
 
     /**
      * Returns aggregations that should be returned for every search query.
+     *
+     * @return array
      */
     public static function getAggregations() {
         $aggregations = [
@@ -250,7 +173,8 @@ class Elasticsearch_Helper_Index {
             'tags' => [
                 'terms' => [
                     'field' => 'tags.keyword',
-                    'size' => 10
+                    'size' => 10,
+                    'missing' => 'N/A'
                 ]
             ],
             'collection' => [
@@ -277,5 +201,110 @@ class Elasticsearch_Helper_Index {
             ]
         ];
         return $aggregations;
+    }
+
+    /**
+     * Returns display labels for aggregation keys (e.g. "Result Type" for "resulttype").
+     *
+     * @return array
+     */
+    public static function getAggregationLabels() {
+        $aggregation_labels = array(
+            'resulttype' => 'Result Types',
+            'itemtype'   => 'Item Types',
+            'collection' => 'Collections',
+            'exhibit'    => 'Exhibits',
+            'tags'       => 'Tags'
+        );
+        return $aggregation_labels;
+    }
+
+    /**
+     * Given an array of key/value pairs defining the facets of the search that the
+     * user would like to drill down into, this function returns an array of filters
+     * that can be used in an elasticsearch query to narrow the search results.
+     *
+     * @param $facets
+     * @return array
+     */
+    public static function getFacetFilters($facets) {
+        $filters = array();
+        if(isset($facets['tags'])) {
+            $filters[] = ['terms' => ['tags.keyword' => $facets['tags']]];
+        }
+        if(isset($facets['collection'])) {
+            $filters[] = ['term' => ['collection.keyword' => $facets['collection']]];
+        }
+        if(isset($facets['exhibit'])) {
+            $filters[] = ['term' => ['exhibit.keyword' => $facets['exhibit']]];
+        }
+        if(isset($facets['itemtype'])) {
+            $filters[] = ['term' => ['itemtype.keyword' => $facets['itemtype']]];
+        }
+        if(isset($facets['resulttype'])) {
+            $filters[] = ['term' => ['resulttype.keyword' => $facets['resulttype']]];
+        }
+        if(isset($facets['featured'])) {
+            $filters[] = ['term' => ['featured' => $facets['featured']]];
+        }
+        return $filters;
+    }
+
+    /**
+     * Executes a search query on an index
+     *
+     * @param $query
+     * @param $options
+     * @return array
+     */
+    public static function search($options) {
+        $docIndex = Elasticsearch_Config::index();
+        if(!isset($options['query']) || !is_array($options['query'])) {
+            throw new Exception("Query parameter is required to execute elasticsearch query.");
+        }
+        $offset = isset($options['offset']) ? $options['offset'] : 0;
+        $limit = isset($options['limit']) ? $options['limit'] : 20;
+        $showNotPublic = isset($options['showNotPublic']) ? $options['showNotPublic'] : false;
+        $terms = isset($options['query']['q']) ? $options['query']['q'] : '';
+        $facets = isset($options['query']['facets']) ? $options['query']['facets'] : [];
+
+        // Main body of query
+        $body = [
+            'query' => ['bool' => []],
+            'aggregations' => self::getAggregations()
+        ];
+
+        // Add must query
+        if(empty($terms)) {
+            $must_query = ['match_all' => new \stdClass()];
+        } else {
+            $must_query = [
+                'query_string' => [
+                    'query' => $terms,
+                    'default_field' => '_all',
+                    'default_operator' => 'OR'
+                ]
+            ];
+        }
+        $body['query']['bool']['must'] = $must_query;
+
+        // Add filters
+        $filters = self::getFacetFilters($facets);
+        if(!$showNotPublic) {
+            $filters = array_merge($filters, ['term' => ['public' => true]]);
+        }
+        if(count($filters) > 0) {
+            $body['query']['bool']['filter'] = $filters;
+        }
+
+        $params = [
+            'index' => $docIndex,
+            'from' => $offset,
+            'size' => $limit,
+            'body' => $body
+        ];
+        error_log("elasticsearch search params: ".var_export($params['body']['query'],1));
+
+        return self::client()->search($params);
     }
 }

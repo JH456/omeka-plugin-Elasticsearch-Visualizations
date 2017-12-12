@@ -1,11 +1,5 @@
 <?php
-$aggregation_labels = array(
-    'resulttype' => 'Result Types',
-    'itemtype'   => 'Item Types',
-    'collection' => 'Collections',
-    'exhibit'    => 'Exhibits',
-    'tags'       => 'Tags'
-);
+$aggregation_labels = Elasticsearch_Helper_index::getAggregationLabels();
 $querystr = Elasticsearch_Utils::getQueryString($query);
 $applied_facets = $query['facets'];
 ?>
