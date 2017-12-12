@@ -6,18 +6,16 @@
 <ul>
     <li data-field="resulttype"><b>Result Type:</b> <?php echo $hit['_source']['resulttype']; ?></li>
 
-<?php if(isset($hit['_source']['itemType'])): ?>
-    <li data-field="itemType"><b>Item Type:</b> <?php echo $hit['_source']['itemType']; ?></li>
+<?php if(isset($hit['_source']['itemtype'])): ?>
+    <li data-field="itemtype"><b>Item Type:</b> <?php echo $hit['_source']['itemtype']; ?></li>
 <?php endif; ?>
 
 <?php if(isset($hit['_source']['collection'])): ?>
     <li data-field="collection"><b>Collection:</b> <?php echo $hit['_source']['collection']; ?></li>
 <?php endif; ?>
 
-<?php foreach($hit['_source']['elements'] as $elementName): ?>
-    <?php if(array_key_exists($elementName, $hit['_source']['element'])): ?>
-        <li data-field="<?php echo "element.$elementName"; ?>"><b><?php echo $elementName; ?>:</b> <?php echo $hit['_source']['element'][$elementName]; ?></li>
-    <?php endif; ?>
+<?php foreach($hit['_source']['elements'] as $element): ?>
+        <li data-field="elements.name,elements.text"><b><?php echo $element['name']; ?>:</b> <?php echo $element['text']; ?></li>
 <?php endforeach; ?>
 
 <?php if(isset($hit['_source']['tags']) && count($hit['_source']['tags']) > 0): ?>

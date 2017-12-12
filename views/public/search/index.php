@@ -26,9 +26,8 @@
     <?php echo $this->partial('search/partials/help.php'); ?>
 </div>
 
-<?php
-//echo "<pre>".htmlspecialchars(json_encode($results, JSON_PRETTY_PRINT))."</pre>";
-?>
+<!-- RESULTS -->
+<?php echo "<!--".json_encode($results, JSON_PRETTY_PRINT)."-->"; ?>
 
 <?php if($results): ?>
 

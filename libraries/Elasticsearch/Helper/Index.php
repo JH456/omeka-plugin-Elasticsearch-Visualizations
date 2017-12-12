@@ -31,7 +31,10 @@ class Elasticsearch_Helper_Index {
         $docIndex = Elasticsearch_Config::index();
         $params = [
             'index' => $docIndex,
-            'body' => []
+            'body' => [
+                'settings' => [],
+                'mappings' => self::getMappings()
+            ]
         ];
         return self::client()->indices()->create($params);
     }
@@ -59,28 +62,7 @@ class Elasticsearch_Helper_Index {
             'query' => [
                 'bool' => [],
             ],
-            'aggregations' => [
-                'tags' => [
-                    'terms' => [
-                        'field' => 'tags.keyword'
-                    ]
-                ],
-                'collection' => [
-                    'terms' => [
-                        'field' => 'collection.keyword'
-                    ]
-                ],
-                'itemType' => [
-                    'terms' => [
-                        'field' => 'itemType.keyword'
-                    ]
-                ],
-                'resulttype' => [
-                    'terms' => [
-                        'field' => 'resulttype.keyword'
-                    ]
-                ]
-            ]
+            'aggregations' => self::getAggregations()
         ];
 
         // Add must query
@@ -104,17 +86,24 @@ class Elasticsearch_Helper_Index {
         if(!$showNotPublic) {
             $filters[] = ['term' => ['public' => true]];
         }
+
         if(isset($facets['tags'])) {
             $filters[] = ['terms' => ['tags.keyword' => $facets['tags']]];
         }
         if(isset($facets['collection'])) {
             $filters[] = ['term' => ['collection.keyword' => $facets['collection']]];
         }
-        if(isset($facets['itemType'])) {
-            $filters[] = ['term' => ['itemType.keyword' => $facets['itemType']]];
+        if(isset($facets['exhibit'])) {
+            $filters[] = ['term' => ['exhibit.keyword' => $facets['exhibit']]];
+        }
+        if(isset($facets['itemtype'])) {
+            $filters[] = ['term' => ['itemtype.keyword' => $facets['itemtype']]];
         }
         if(isset($facets['resulttype'])) {
             $filters[] = ['term' => ['resulttype.keyword' => $facets['resulttype']]];
+        }
+        if(isset($facets['featured'])) {
+            $filters[] = ['term' => ['featured' => $facets['featured']]];
         }
         if(count($filters) > 0) {
             $body['query']['bool']['filter'] = $filters;
@@ -186,5 +175,107 @@ class Elasticsearch_Helper_Index {
         }
 
         return $reindex_jobs;
+    }
+
+    /**
+     * Returns the field mappings that define the structure of documents
+     * indexed in elasticsearch.
+     *
+     * Note that this should cover all integrations (e.g. items, exhibits, etc).
+     *
+     * @return array
+     */
+    public static function getMappings() {
+        $mappings = [
+            'doc' => [
+                'properties' => [
+                    // Common Mappings
+                    'resulttype'  => ['type' => 'keyword'],
+                    'title'       => ['type' => 'text'],
+                    'description' => ['type' => 'text'],
+                    'text'        => ['type' => 'text'],
+                    'model'       => ['type' => 'keyword'],
+                    'modelid'     => ['type' => 'integer'],
+                    'featured'    => ['type' => 'boolean'],
+                    'public'      => ['type' => 'boolean'],
+                    'created'     => ['type' => 'date'],
+                    'updated'     => ['type' => 'date'],
+                    'tags'        => ['type' => 'keyword'],
+                    'slug'        => ['type' => 'text'],
+
+                    // Item-Specific
+                    'collection' => ['type' => 'text'],
+                    'itemtype'   => ['type' => 'keyword'],
+                    'elements'   => [
+                        'type' => 'nested',
+                        'properties' => [
+                            'name' => ['type' => 'keyword'],
+                            'text' => ['type' => 'text']
+                        ]
+                    ],
+
+                    // Exhibit-Specific
+                    'credits' => ['type' => 'text'],
+                    'exhibit' => ['type' => 'text'],
+                    'blocks' => [
+                        'type' => 'nested',
+                        'properties' => [
+                            'text'        => ['type' => 'text'],
+                            'attachments' => ['type' => 'text']
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        return $mappings;
+    }
+
+    /**
+     * Returns aggregations that should be returned for every search query.
+     */
+    public static function getAggregations() {
+        $aggregations = [
+            'resulttype' => [
+                'terms' => [
+                    'field' => 'resulttype.keyword',
+                    'size' => 10
+                ]
+            ],
+            'itemtype' => [
+                'terms' => [
+                    'field' => 'itemtype.keyword',
+                    'size' => 10
+                ]
+            ],
+            'tags' => [
+                'terms' => [
+                    'field' => 'tags.keyword',
+                    'size' => 10
+                ]
+            ],
+            'collection' => [
+                'terms' => [
+                    'field' => 'collection.keyword',
+                    'size' => 10
+                ]
+            ],
+            'exhibit' => [
+                'terms' => [
+                    'field' => 'exhibit.keyword',
+                    'size' => 10
+                ]
+            ],
+            'featured' => [
+                'terms' => [
+                    'field' => 'featured',
+                ]
+            ],
+            'public' => [
+                'terms' => [
+                    'field' => 'public',
+                ]
+            ]
+        ];
+        return $aggregations;
     }
 }
