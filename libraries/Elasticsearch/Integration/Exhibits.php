@@ -130,10 +130,12 @@ class Elasticsearch_Integration_Exhibits extends Elasticsearch_Integration_BaseI
      */
     public function getExhibitDocuments() {
         $db = get_db();
-        $table = $db->getTable('Exhibit');
-        if(!$table) {
-            return array();
+        $className = 'Exhibit';
+        if(!class_exists($className)) {
+            $this->_log("Unable to get documents because $className class does not exist!", Zend_Log::ERR);
+            return null;
         }
+        $table = $db->getTable($className);
         $select = $table->getSelect();
         $table->applySorting($select, 'id', 'ASC');
         $exhibits = $table->fetchObjects($select);
@@ -192,10 +194,12 @@ class Elasticsearch_Integration_Exhibits extends Elasticsearch_Integration_BaseI
      */
     public function getExhibitPageDocuments() {
         $db = get_db();
-        $table = $db->getTable('ExhibitPage');
-        if(!$table) {
-            return array();
+        $className = 'ExhibitPage';
+        if(!class_exists($className)) {
+            $this->_log("Unable to get documents because $className class does not exist!", Zend_Log::ERR);
+            return null;
         }
+        $table = $db->getTable($className);
         $select = $table->getSelect();
         $table->applySorting($select, 'id', 'ASC');
         $exhibitPages = $table->fetchObjects($select);
@@ -219,12 +223,16 @@ class Elasticsearch_Integration_Exhibits extends Elasticsearch_Integration_BaseI
 
         // index exhibits
         $docs = $this->getExhibitDocuments();
-        $this->_log('indexAll exhibits: '.count($docs));
-        Elasticsearch_Document::bulkIndex($docs);
+        if(isset($docs)) {
+            $this->_log('indexAll exhibits: '.count($docs));
+            Elasticsearch_Document::bulkIndex($docs);
+        }
 
         // index exhibit pages
         $docs = $this->getExhibitPageDocuments();
-        $this->_log('indexAll exhibit pages: '.count($docs));
-        Elasticsearch_Document::bulkIndex($docs);
+        if(isset($docs)) {
+            $this->_log('indexAll exhibit pages: '.count($docs));
+            Elasticsearch_Document::bulkIndex($docs);
+        }
     }
 }

@@ -16,7 +16,7 @@ class Elasticsearch_Helper_Index {
             $integrationMgr = new Elasticsearch_IntegrationManager($docIndex);
             $integrationMgr->indexAll();
         } catch(Exception $e) {
-            error_log($e, Zend_Log::ERR);
+            _log($e, Zend_Log::ERR);
         }
     }
 
@@ -330,7 +330,7 @@ class Elasticsearch_Helper_Index {
             'size' => $limit,
             'body' => $body
         ];
-        error_log("elasticsearch search params: ".var_export($params['body']['query'],1));
+        _log("elasticsearch search params: ".var_export($params['body']['query'],1), Zend_Log::INFO);
 
         return self::client()->search($params);
     }

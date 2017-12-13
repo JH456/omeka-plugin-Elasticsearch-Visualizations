@@ -62,8 +62,12 @@ class Elasticsearch_IntegrationManager {
     protected function _perform($method) {
         _log("_perform($method)");
         foreach(self::$_integrations as $integrationClass) {
-            $integration = new $integrationClass($this->_docIndex);
-            $integration->$method();
+            if(class_exists($integrationClass)) {
+                $integration = new $integrationClass($this->_docIndex);
+                $integration->$method();
+            } else {
+                _log("Integration class $integrationClass does not exist!", Zend_Log::WARN);
+            }
         }
     }
 
@@ -91,4 +95,5 @@ class Elasticsearch_IntegrationManager {
 
         self::$_detected = true;
     }
+
 }

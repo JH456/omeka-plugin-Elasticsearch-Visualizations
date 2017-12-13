@@ -70,7 +70,7 @@ class Elasticsearch_Document {
         try {
             $client->delete($this->getParams());
         } catch(Elasticsearch\Common\Exceptions\Missing404Exception $e) {
-            error_log($e);
+            _log($e, Zend_Log::ERR);
         }
     }
 
@@ -127,8 +127,8 @@ class Elasticsearch_Document {
         $client = Elasticsearch_Client::create(['timeout' => $timeout]);
 
         $timing_start = microtime(true);
-        error_log("Starting bulk indexing at $timing_start");
-        error_log("Bulk indexing ".count($docs)." documents in batches of $batchSize with timeout $timeout");
+        _log("Starting bulk indexing at $timing_start", Zend_Log::INFO);
+        _log("Bulk indexing ".count($docs)." documents in batches of $batchSize with timeout $timeout", Zend_Log::INFO);
 
         $responses = array();
         for($offset = 0; $offset < count($docs); $offset += $batchSize) {
@@ -139,8 +139,8 @@ class Elasticsearch_Document {
 
         $timing_end = microtime(true);
         $timing_duration = $timing_end - $timing_start;
-        error_log("Finished bulk indexing at $timing_end");
-        error_log("Bulk indexing took $timing_duration seconds");
+        _log("Finished bulk indexing at $timing_end", Zend_Log::INFO);
+        _log("Bulk indexing took $timing_duration seconds", Zend_Log::INFO);
 
         return $responses;
     }

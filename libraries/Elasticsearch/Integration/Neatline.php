@@ -156,14 +156,16 @@ class Elasticsearch_Integration_Neatline extends Elasticsearch_Integration_BaseI
     /**
      * Get array of documents to index.
      *
-     * @return array
+     * @return array|null
      */
     public function getNeatlineExhibitDocuments() {
         $db = get_db();
-        $table = $db->getTable('NeatlineExhibit');
-        if(!$table) {
-            return array();
+        $className = 'NeatlineExhibit';
+        if(!class_exists($className)) {
+            $this->_log("Unable to get documents because $className class does not exist!", Zend_Log::ERR);
+            return null;
         }
+        $table = $db->getTable($className);
         $select = $table->getSelect();
         $table->applySorting($select, 'id', 'ASC');
         $neatlineExhibits = $table->fetchObjects($select);
@@ -181,7 +183,9 @@ class Elasticsearch_Integration_Neatline extends Elasticsearch_Integration_BaseI
      */
     public function indexAll() {
         $docs = $this->getNeatlineExhibitDocuments();
-        $this->_log('indexAll neatline_exhibit: '.count($docs));
-        Elasticsearch_Document::bulkIndex($docs);
+        if(isset($docs)) {
+            $this->_log('indexAll neatline_exhibit: '.count($docs));
+            Elasticsearch_Document::bulkIndex($docs);
+        }
     }
 }
