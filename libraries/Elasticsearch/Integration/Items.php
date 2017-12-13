@@ -79,16 +79,21 @@ class Elasticsearch_Integration_Items extends Elasticsearch_Integration_BaseInte
         }
 
         // elements:
-        $elements = [];
         try {
+            $elementData = [];
+            $elementNames = [];
             foreach ($item->getAllElementTexts() as $elementText) {
                 $element = $item->getElementById($elementText->element_id);
-                $elements[] = ['name' => $element->name, 'text' => $elementText->text];
+                $normalizedName = strtolower(preg_replace('/[^a-zA-Z0-9-_]/', '', $element->name));
+                $elementData[$normalizedName] = $elementText->text;
+                $elementNames[] = ['displayName' => $element->name, 'name' => $normalizedName];
             }
+            $doc->setField('element', $elementData);
+            $doc->setField('elements', $elementNames);
         } catch(Omeka_Record_Exception $e) {
             $this->_log("Error loading elements for item {$item->id}. Error: ".$e->getMessage(), Zend_Log::WARN);
         }
-        $doc->setField('elements', $elements);
+
 
         // tags:
         $tags = [];

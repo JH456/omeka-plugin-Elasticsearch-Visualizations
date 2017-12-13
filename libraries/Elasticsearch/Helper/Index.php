@@ -128,13 +128,8 @@ class Elasticsearch_Helper_Index {
                     // Item-Specific
                     'collection' => ['type' => 'text'],
                     'itemtype'   => ['type' => 'keyword'],
-                    'elements'   => [
-                        'type' => 'nested',
-                        'properties' => [
-                            'name' => ['type' => 'keyword'],
-                            'text' => ['type' => 'text']
-                        ]
-                    ],
+                    'elements'   => ['type' => 'keyword', 'index' => false],
+                    'element'    => ['type' => 'object'],
 
                     // Exhibit-Specific
                     'credits' => ['type' => 'text'],

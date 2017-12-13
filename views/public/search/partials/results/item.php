@@ -4,25 +4,31 @@
 <?php endif; ?>
 
 <ul>
-    <li data-field="resulttype"><b>Result Type:</b> <?php echo $hit['_source']['resulttype']; ?></li>
+    <li title="resulttype"><b>Result Type:</b> <?php echo $hit['_source']['resulttype']; ?></li>
 
 <?php if(isset($hit['_source']['itemtype'])): ?>
-    <li data-field="itemtype"><b>Item Type:</b> <?php echo $hit['_source']['itemtype']; ?></li>
+    <li title="itemtype"><b>Item Type:</b> <?php echo $hit['_source']['itemtype']; ?></li>
 <?php endif; ?>
 
 <?php if(isset($hit['_source']['collection'])): ?>
-    <li data-field="collection"><b>Collection:</b> <?php echo $hit['_source']['collection']; ?></li>
+    <li title="collection"><b>Collection:</b> <?php echo $hit['_source']['collection']; ?></li>
 <?php endif; ?>
 
-<?php foreach($hit['_source']['elements'] as $element): ?>
-        <li data-field="elements.name,elements.text"><b><?php echo $element['name']; ?>:</b> <?php echo $element['text']; ?></li>
-<?php endforeach; ?>
+<?php if(isset($hit['_source']['elements']) && isset($hit['_source']['element'])): ?>
+    <?php $elementText = $hit['_source']['element']; ?>
+    <?php $elementNames = $hit['_source']['elements']; ?>
+    <?php foreach($elementNames as $elementName): ?>
+        <?php if(isset($elementText[$elementName['name']])): ?>
+            <li title="element.<?php echo $elementName['name']; ?>"><b><?php echo $elementName['displayName']; ?>:</b> <?php echo $elementText[$elementName['name']]; ?></li>
+        <?php endif; ?>
+    <?php endforeach; ?>
+<?php endif; ?>
 
 <?php if(isset($hit['_source']['tags']) && count($hit['_source']['tags']) > 0): ?>
-    <li data-field="tags"><b>Tags:</b>  <?php echo implode(", ", $hit['_source']['tags']); ?></li>
+    <li title="tags"><b>Tags:</b>  <?php echo implode(", ", $hit['_source']['tags']); ?></li>
 <?php endif; ?>
 
-    <li data-field="created"><b>Record Created: </b> <?php echo Elasticsearch_Utils::formatDate($hit['_source']['created']); ?></li>
-    <li data-field="updated"><b>Record Updated: </b> <?php echo Elasticsearch_Utils::formatDate($hit['_source']['updated']); ?></li>
+    <li title="created"><b>Record Created: </b> <?php echo Elasticsearch_Utils::formatDate($hit['_source']['created']); ?></li>
+    <li title="updated"><b>Record Updated: </b> <?php echo Elasticsearch_Utils::formatDate($hit['_source']['updated']); ?></li>
 </ul>
 
