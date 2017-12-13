@@ -131,6 +131,9 @@ class Elasticsearch_Integration_Exhibits extends Elasticsearch_Integration_BaseI
     public function getExhibitDocuments() {
         $db = get_db();
         $table = $db->getTable('Exhibit');
+        if(!$table) {
+            return array();
+        }
         $select = $table->getSelect();
         $table->applySorting($select, 'id', 'ASC');
         $exhibits = $table->fetchObjects($select);
@@ -190,6 +193,9 @@ class Elasticsearch_Integration_Exhibits extends Elasticsearch_Integration_BaseI
     public function getExhibitPageDocuments() {
         $db = get_db();
         $table = $db->getTable('ExhibitPage');
+        if(!$table) {
+            return array();
+        }
         $select = $table->getSelect();
         $table->applySorting($select, 'id', 'ASC');
         $exhibitPages = $table->fetchObjects($select);

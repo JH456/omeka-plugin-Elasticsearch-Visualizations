@@ -80,6 +80,9 @@ class Elasticsearch_Integration_SimplePages extends Elasticsearch_Integration_Ba
     public function getSimplePageDocuments() {
         $db = get_db();
         $table = $db->getTable('SimplePagesPage');
+        if(!$table) {
+            return array();
+        }
         $select = $table->getSelect();
         $table->applySorting($select, 'id', 'ASC');
         $simplePages = $table->fetchObjects($select);

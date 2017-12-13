@@ -144,6 +144,9 @@ class Elasticsearch_Integration_Neatline extends Elasticsearch_Integration_BaseI
      */
     protected function _getRecords($exhibit_id) {
         $table = get_db()->getTable('NeatlineRecord');
+        if(!$table) {
+            return array();
+        }
         $select = $table->getSelect()->where('exhibit_id = ?');
         $table->applySorting($select, 'id', 'ASC');
         $neatlineRecords = $table->fetchObjects($select, array($exhibit_id));
@@ -158,6 +161,9 @@ class Elasticsearch_Integration_Neatline extends Elasticsearch_Integration_BaseI
     public function getNeatlineExhibitDocuments() {
         $db = get_db();
         $table = $db->getTable('NeatlineExhibit');
+        if(!$table) {
+            return array();
+        }
         $select = $table->getSelect();
         $table->applySorting($select, 'id', 'ASC');
         $neatlineExhibits = $table->fetchObjects($select);
