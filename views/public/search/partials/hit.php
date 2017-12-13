@@ -1,5 +1,5 @@
 <div class="elasticsearch-result">
-<!-- <?php echo json_encode($hit, JSON_PRETTY_PRINT); ?> -->
+    <?php echo '<!--'.json_encode($hit, JSON_PRETTY_PRINT).'-->'; ?>
     <?php $model_template = Inflector::underscore($hit['_source']['model']).".php"; ?>
     <?php $record =  Elasticsearch_Utils::getRecord($hit); ?>
     <?php $record_url = isset($hit['_source']['url']) ? public_url($hit['_source']['url']) : record_url($record); ?>

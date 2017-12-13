@@ -29,7 +29,9 @@
 </div>
 
 <!-- RESULTS -->
-<?php echo "<!--".json_encode($results, JSON_PRETTY_PRINT)."-->"; ?>
+<?php
+//echo "<!--".json_encode($results, JSON_PRETTY_PRINT)."-->";
+?>
 
 <?php if($results): ?>
 
