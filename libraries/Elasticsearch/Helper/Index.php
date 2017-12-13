@@ -6,32 +6,18 @@
 class Elasticsearch_Helper_Index {
 
     /**
-     * Indexes all content.
-     *
-     * Types of documents to index include things that can be uniquely referenced via URL. That includes:
-     *      - Items
-     *      - TODO: Collections
-     *      - TODO: Exhibits (addon)
-     *      - TODO: Simplepages (addon)
+     * Indexes all items and integrated addons such as exhibits and simple pages.
      *
      * @return void
      */
     public static function indexAll() {
-        $docs = self::getItemDocuments();
-        $batchSize = 500;
-        $timeout = 300;
-        Elasticsearch_Document::bulkIndex($docs, $batchSize, $timeout);
-    }
-
-    /**
-     * Indexes a single Item record.
-     *
-     * @param $item
-     * @return array
-     */
-    public static function indexItem($item) {
-	    $doc = self::getItemDocument($item);
-	    return $doc->index();
+        try {
+            $docIndex = Elasticsearch_Config::index();
+            $integrationMgr = new Elasticsearch_IntegrationManager($docIndex);
+            $integrationMgr->indexAll();
+        } catch(Exception $e) {
+            _log($e, Zend_Log::ERR);
+        }
     }
 
     /**
@@ -45,177 +31,12 @@ class Elasticsearch_Helper_Index {
         $docIndex = Elasticsearch_Config::index();
         $params = [
             'index' => $docIndex,
-            'body' => []
-        ];
-        return self::client()->indices()->create($params);
-    }
-
-
-    /**
-     * Get array of documents to index.
-     *
-     * @return array of Elasticsearch_Document objects
-     */
-    public static function getItemDocuments() {
-        $db = get_db();
-        $table = $db->getTable('Item');
-        $select = $table->getSelect();
-        $table->applySorting($select, 'id', 'ASC');
-        $items = $table->fetchObjects($select);
-
-        $docs = [];
-        foreach($items as $item) {
-            $docs[] = self::getItemDocument($item);
-        }
-
-        return $docs;
-    }
-
-    /**
-     * Returns an item as a document.
-     *
-     * @param $item
-     * @return Elasticsearch_Document
-     */
-    public static function getItemDocument($item) {
-        $docIndex = Elasticsearch_Config::index();
-        $doc = new Elasticsearch_Document($docIndex, 'item', $item->id);
-        $doc->setFields([
-            'model'     => 'Item',
-            'modelid'   => $item->id,
-            'featured'  => (bool) $item->featured,
-            'public'    => (bool) $item->public,
-            'resulttype'=> 'Item'
-        ]);
-
-        // title:
-        $title = metadata($item, array('Dublin Core', 'Title'));
-        $doc->setField('title', $title);
-
-        // collection:
-        if ($collection = $item->getCollection()) {
-            $doc->setField('collection', metadata($collection, array('Dublin Core', 'Title')));
-        }
-
-        // item type:
-        if ($itemType = $item->getItemType()) {
-            $doc->setField('itemType', $itemType->name);
-        }
-
-        // elements:
-        $elements = [];
-        foreach($item->getAllElementTexts() as $elementText) {
-            $element = $item->getElementById($elementText->element_id);
-            $elements[$element->name] = $elementText->text;
-        }
-        $doc->setField('elements', $elements);
-
-        // tags:
-        $tags = [];
-        foreach ($item->getTags() as $tag) {
-            $tags[] = $tag->name;
-        }
-        $doc->setField('tags', $tags);
-
-        return $doc;
-    }
-
-    /**
-     * Executes a search query on an index
-     *
-     * @param $query
-     * @param $options
-     * @return array
-     */
-    public static function search($options) {
-        $docIndex = Elasticsearch_Config::index();
-        if(!isset($options['query']) || !is_array($options['query'])) {
-            throw new Exception("Query parameter is required to execute elasticsearch query.");
-        }
-        $offset = isset($options['offset']) ? $options['offset'] : 0;
-        $limit = isset($options['limit']) ? $options['limit'] : 20;
-        $showNotPublic = isset($options['showNotPublic']) ? $options['showNotPublic'] : false;
-        $terms = isset($options['query']['q']) ? $options['query']['q'] : '';
-        $facets = isset($options['query']['facets']) ? $options['query']['facets'] : [];
-
-        // Main body of query
-        $body = [
-            'query' => [
-                'bool' => [],
-            ],
-            'highlight' => [
-                'pre_tags' => ['<em>'],
-                'post_tags' => ['</em>'],
-                'order' => 'score',
-                'fields' => [
-                    'collection' => new \stdClass(),
-                    'elements.*' => ['fragment_size' => 400, 'number_of_fragments' => 3],
-                    'tags.*'     => new \stdClass()
-                ]
-            ],
-            'aggregations' => [
-                'tags' => [
-                    'terms' => [
-                        'field' => 'tags.keyword'
-                    ]
-                ],
-                'collection' => [
-                    'terms' => [
-                        'field' => 'collection.keyword'
-                    ]
-                ],
-                'itemType' => [
-                    'terms' => [
-                        'field' => 'itemType.keyword'
-                    ]
-                ]
+            'body' => [
+                'settings' => [],
+                'mappings' => self::getMappings()
             ]
         ];
-
-        // Add must query
-        if(empty($terms)) {
-            $must_query = [
-                'match_all' => new \stdClass()
-            ];
-        } else {
-            $must_query = [
-                'multi_match' => [
-                    'query' => $terms,
-                    'fields' => ['title', 'collection', 'itemType', 'elements*', 'tags*'],
-                    'type' => 'cross_fields',
-                    'operator' => 'and'
-                ]
-            ];
-        }
-        $body['query']['bool']['must'] = $must_query;
-
-            // Add filters
-        $filters = [];
-        if(!$showNotPublic) {
-            $filters[] = ['term' => ['public' => true]];
-        }
-        if(isset($facets['tags'])) {
-            $filters[] = ['terms' => ['tags.keyword' => $facets['tags']]];
-        }
-        if(isset($facets['collection'])) {
-            $filters[] = ['term' => ['collection.keyword' => $facets['collection']]];
-        }
-        if(isset($facets['itemType'])) {
-            $filters[] = ['term' => ['itemType.keyword' => $facets['itemType']]];
-        }
-        if(count($filters) > 0) {
-            $body['query']['bool']['filter'] = $filters;
-        }
-
-        $params = [
-            'index' => $docIndex,
-            'from' => $offset,
-            'size' => $limit,
-            'body' => $body
-        ];
-        error_log("elasticsearch search params: ".var_export($params['body']['query'],1));
-
-        return self::client()->search($params);
+        return self::client()->indices()->create($params);
     }
 
     /**
@@ -232,16 +53,6 @@ class Elasticsearch_Helper_Index {
         }
     }
 
-    /**
-     * Deletes an item from the index.
-     *
-     * @param $item
-     */
-    public static function deleteItem($item) {
-        $docIndex = Elasticsearch_Config::index();
-        $doc = new Elasticsearch_Document($docIndex, 'item', $item->id);
-        self::client()->delete($doc->getParams());
-    }
 
     /**
      * Pings the elasticsearch server to see if it is available or not.
@@ -283,5 +94,239 @@ class Elasticsearch_Helper_Index {
         }
 
         return $reindex_jobs;
+    }
+
+    /**
+     * This function defines the field mapping used in the elasticsearch index.
+     *
+     * The mapping defines fields common to all types of documents, as well
+     * as fields specific to certain types of integrations (e.g. items, exhibits, etc).
+     *
+     * Integration-specific fields should be mentioned in the comments below.
+     *
+     * @return array
+     */
+    public static function getMappings() {
+        $mappings = [
+            'doc' => [
+                'properties' => [
+                    // Common Mappings
+                    'resulttype'  => ['type' => 'keyword'],
+                    'title'       => ['type' => 'text'],
+                    'description' => ['type' => 'text'],
+                    'text'        => ['type' => 'text'],
+                    'model'       => ['type' => 'keyword'],
+                    'modelid'     => ['type' => 'integer'],
+                    'featured'    => ['type' => 'boolean'],
+                    'public'      => ['type' => 'boolean'],
+                    'created'     => ['type' => 'date'],
+                    'updated'     => ['type' => 'date'],
+                    'tags'        => ['type' => 'keyword'],
+                    'slug'        => ['type' => 'keyword'],
+                    'url'         => ['type' => 'keyword'],
+
+                    // Item-Specific
+                    'collection' => ['type' => 'text'],
+                    'itemtype'   => ['type' => 'keyword'],
+                    'elements'   => ['type' => 'keyword', 'index' => false],
+                    'element'    => ['type' => 'object'],
+
+                    // Exhibit-Specific
+                    'credits' => ['type' => 'text'],
+                    'exhibit' => ['type' => 'text'],
+                    'blocks' => [
+                        'type' => 'nested',
+                        'properties' => [
+                            'text'        => ['type' => 'text'],
+                            'attachments' => ['type' => 'text']
+                        ]
+                    ],
+
+                    // Neatline-Specific
+                    'neatline' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'records' => [
+                                'type' => 'nested',
+                                'properties' => [
+                                    'id' => ['type' => 'integer', 'index' => false],
+                                    'title' => ['type' => 'text'],
+                                    'body' => ['type' => 'text'],
+                                    'created' => ['type' => 'date'],
+                                    'updated' => ['type' => 'date'],
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        return $mappings;
+    }
+
+    /**
+     * Returns aggregations that should be returned for every search query.
+     *
+     * @return array
+     */
+    public static function getAggregations() {
+        $aggregations = [
+            'resulttype' => [
+                'terms' => [
+                    'field' => 'resulttype.keyword',
+                    'size' => 10
+                ]
+            ],
+            'itemtype' => [
+                'terms' => [
+                    'field' => 'itemtype.keyword',
+                    'size' => 10
+                ]
+            ],
+            'tags' => [
+                'terms' => [
+                    'field' => 'tags.keyword',
+                    'size' => 15
+                ]
+            ],
+            'collection' => [
+                'terms' => [
+                    'field' => 'collection.keyword',
+                    'size' => 10
+                ]
+            ],
+            'exhibit' => [
+                'terms' => [
+                    'field' => 'exhibit.keyword',
+                    'size' => 10
+                ]
+            ],
+            'featured' => [
+                'terms' => [
+                    'field' => 'featured',
+                ]
+            ],
+            'public' => [
+                'terms' => [
+                    'field' => 'public',
+                ]
+            ]
+        ];
+        return $aggregations;
+    }
+
+    /**
+     * Returns display labels for aggregation keys (e.g. "Result Type" for "resulttype").
+     *
+     * @return array
+     */
+    public static function getAggregationLabels() {
+        $aggregation_labels = array(
+            'resulttype' => 'Result Types',
+            'itemtype'   => 'Item Types',
+            'collection' => 'Collections',
+            'exhibit'    => 'Exhibits',
+            'tags'       => 'Tags'
+        );
+        return $aggregation_labels;
+    }
+
+    /**
+     * Given an array of key/value pairs defining the facets of the search that the
+     * user would like to drill down into, this function returns an array of filters
+     * that can be used in an elasticsearch query to narrow the search results.
+     *
+     * @param $facets
+     * @return array
+     */
+    public static function getFacetFilters($facets) {
+        $filters = array();
+        if(isset($facets['tags'])) {
+            $filters[] = ['terms' => ['tags.keyword' => $facets['tags']]];
+        }
+        if(isset($facets['collection'])) {
+            $filters[] = ['term' => ['collection.keyword' => $facets['collection']]];
+        }
+        if(isset($facets['exhibit'])) {
+            $filters[] = ['term' => ['exhibit.keyword' => $facets['exhibit']]];
+        }
+        if(isset($facets['itemtype'])) {
+            $filters[] = ['term' => ['itemtype.keyword' => $facets['itemtype']]];
+        }
+        if(isset($facets['resulttype'])) {
+            $filters[] = ['term' => ['resulttype.keyword' => $facets['resulttype']]];
+        }
+        if(isset($facets['featured'])) {
+            $filters[] = ['term' => ['featured' => $facets['featured']]];
+        }
+        return $filters;
+    }
+
+    /**
+     * Executes a search query on an index
+     *
+     * @param $query
+     * @param $options
+     * @return array
+     */
+    public static function search($options) {
+        $docIndex = Elasticsearch_Config::index();
+        if(!isset($options['query']) || !is_array($options['query'])) {
+            throw new Exception("Query parameter is required to execute elasticsearch query.");
+        }
+        $offset = isset($options['offset']) ? $options['offset'] : 0;
+        $limit = isset($options['limit']) ? $options['limit'] : 20;
+        $showNotPublic = isset($options['showNotPublic']) ? $options['showNotPublic'] : false;
+        $terms = isset($options['query']['q']) ? $options['query']['q'] : '';
+        $facets = isset($options['query']['facets']) ? $options['query']['facets'] : [];
+        $sort = isset($options['sort']) ? $options['sort'] : null;
+
+        // Main body of query
+        $body = [
+            'query' => ['bool' => []],
+            'aggregations' => self::getAggregations()
+        ];
+
+        // Add must query
+        if(empty($terms)) {
+            $must_query = ['match_all' => new \stdClass()];
+        } else {
+            $must_query = [
+                'query_string' => [
+                    'query' => $terms,
+                    'default_field' => '_all',
+                    'default_operator' => 'OR'
+                ]
+            ];
+        }
+        $body['query']['bool']['must'] = $must_query;
+
+        // Add filters
+        $filters = self::getFacetFilters($facets);
+        if(!$showNotPublic) {
+            $filters = array_merge($filters, ['term' => ['public' => true]]);
+        }
+        if(count($filters) > 0) {
+            $body['query']['bool']['filter'] = $filters;
+        }
+
+        // Add sorting
+        if(isset($sort) && isset($sort['field'])) {
+            $body['sort'] = array();
+            $body['sort'][0] = array(
+                $sort['field'] => (isset($sort['dir']) ? $sort['dir'] : 'asc')
+            );
+            $body['track_scores'] = true; // otherwise scores won't be computed
+        }
+
+        $params = [
+            'index' => $docIndex,
+            'from' => $offset,
+            'size' => $limit,
+            'body' => $body
+        ];
+        _log("elasticsearch search params: ".var_export($params['body']['query'],1), Zend_Log::INFO);
+
+        return self::client()->search($params);
     }
 }

@@ -1,9 +1,5 @@
 <?php
-$aggregation_labels = array(
-    'itemType'   => 'Item Types',
-    'collection' => 'Collections',
-    'tags'       => 'Tags'
-);
+$aggregation_labels = Elasticsearch_Helper_index::getAggregationLabels();
 $querystr = Elasticsearch_Utils::getQueryString($query);
 $applied_facets = $query['facets'];
 ?>
@@ -25,18 +21,19 @@ $applied_facets = $query['facets'];
 </section>
 <?php endif; ?>
 
-
 <section>
 <h3>Filters</h3>
 <?php foreach($aggregation_labels as $agg_name => $agg_label): ?>
-    <?php echo $agg_label; ?>
-    <ul>
-        <?php foreach($aggregations[$agg_name]['buckets'] as $agg): ?>
-            <?php $facet_url = get_view()->url('/elasticsearch') . '?' . Elasticsearch_Utils::addFacetToQuery($querystr, $agg_name, $agg['key']); ?>
-            <li>
-                <a href="<?php echo $facet_url; ?>"><?php echo htmlspecialchars($agg['key']) ." (".$agg['doc_count'].")"; ?></a>
-            </li>
-        <?php endforeach; ?>
-    </ul>
+    <?php if(count($aggregations[$agg_name]['buckets']) > 0): ?>
+        <?php echo $agg_label; ?>
+        <ul>
+            <?php foreach($aggregations[$agg_name]['buckets'] as $agg): ?>
+                <?php $facet_url = get_view()->url('/elasticsearch') . '?' . Elasticsearch_Utils::addFacetToQuery($querystr, $agg_name, $agg['key']); ?>
+                <li>
+                    <a href="<?php echo $facet_url; ?>"><?php echo htmlspecialchars($agg['key']) ." (".$agg['doc_count'].")"; ?></a>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
 <?php endforeach; ?>
 </section>

@@ -48,10 +48,11 @@ class Elasticsearch_AdminController extends Omeka_Controller_AbstractActionContr
             } catch (Exception $err) {
                 $this->_helper->flashMessenger($err->getMessage(), 'error');
             }
+            $this->redirect('/elasticsearch/admin/reindex');
+        } else {
+            $jobs = Elasticsearch_Helper_Index::getReindexJobs();
+            $this->view->assign("jobs", $jobs);
+            $this->view->form = new Elasticsearch_Form_Index();
         }
-
-        $jobs = Elasticsearch_Helper_Index::getReindexJobs();
-        $this->view->assign("jobs", $jobs);
-        $this->view->form = new Elasticsearch_Form_Index();
     }
 }

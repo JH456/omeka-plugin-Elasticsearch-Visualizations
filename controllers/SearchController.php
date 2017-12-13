@@ -13,9 +13,8 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
         $page = $this->_request->page ? $this->_request->page : 1;
         $start = ($page - 1) * $limit;
         $user = $this->getCurrentUser();
-
-        // collect query parameters
         $query = $this->_getSearchParams();
+        $sort = $this->_getSortParams();
 
         // execute query
         $results = null;
@@ -24,6 +23,7 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
                 'query'             => $query,
                 'offset'            => $start,
                 'limit'             => $limit,
+                'sort'              => $sort,
                 'showNotPublic'     => $user && is_allowed('Items', 'showNotPublic')
             ]);
 
@@ -51,5 +51,16 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
             }
         }
         return $query;
+    }
+
+    private function _getSortParams() {
+        $sort = [];
+        if($this->_request->sort_field) {
+            $sort['field'] = $this->_request->sort_field;
+            if($this->_request->sort_dir) {
+                $sort['dir'] = $this->_request->sort_dir;
+            }
+        }
+        return $sort;
     }
 }

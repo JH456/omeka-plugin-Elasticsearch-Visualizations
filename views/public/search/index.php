@@ -1,7 +1,10 @@
-<?php queue_css_file('results'); ?>
+<?php queue_css_file('elasticsearch-results'); ?>
+<?php queue_js_file('elasticsearch'); ?>
+<?php queue_js_string('ElasticsearchPlugin.setupSearchResults();'); ?>
 <?php echo head(array('title' => __('Elasticsearch')));?>
 
-<h1><?php echo __('Search'); ?></h1>
+<?php $totalResults = isset($results['hits']['total']) ? $results['hits']['total'].' '.__('results') : null; ?>
+<h1><?php echo __('Search') . " ($totalResults)"; ?></h1>
 
 <div id="elasticsearch-search">
     <form id="elasticsearch-search-form">
@@ -16,15 +19,21 @@
             <?php endif; ?>
         <?php endforeach; ?>
         <input type="submit" value="Search" />
+        <br>
+        <a href="javascript:void(0);" id="elasticsearch-help-btn" style="display:block;clear:both;"><?php echo __("Search Help"); ?></a>
     </form>
 </div>
 
+<div id="elasticsearch-help" style="display:none;">
+    <?php echo $this->partial('search/partials/help.php'); ?>
+</div>
+
+<!-- RESULTS -->
 <?php
-//echo "<pre>".htmlspecialchars(json_encode($results, JSON_PRETTY_PRINT))."</pre>";
+//echo "<!--".json_encode($results, JSON_PRETTY_PRINT)."-->";
 ?>
 
 <?php if($results): ?>
-    <h2>Found <?php echo $results['hits']['total']; ?> results</h2>
 
     <section id="elasticsearch-sidebar">
         <?php
@@ -36,22 +45,22 @@
     </section>
 
     <section id="elasticsearch-results">
-        <?php foreach($results['hits']['hits'] as $hit): ?>
-            <?php echo $this->partial('search/partials/hit.php', array('hit' => $hit)); ?>
-        <?php endforeach; ?>
+        <?php if(count($results['hits']['hits']) > 0): ?>
+            <?php foreach($results['hits']['hits'] as $hit): ?>
+                <?php echo $this->partial('search/partials/hit.php', array('hit' => $hit)); ?>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <?php echo __("Search did not return any results."); ?>
+        <?php endif; ?>
 
-        <div style="margin-bottom:18px;">
-            <small>Search query executed in <?php echo $results['took']; ?> milliseconds.</small>
-        </div>
         <?php echo pagination_links(); ?>
     </section>
 
 <?php else: ?>
     <section>
-        <h2>Search failed</h2>
-        <p>An error occurred while executing the search.</p>
+        <h2><?php echo __("Search failed"); ?></h2>
+        <p><?php echo __("The search query could not be executed. Please check your search query and try again."); ?></p>
     </section>
 <?php endif;  ?>
-
 
 <?php echo foot();

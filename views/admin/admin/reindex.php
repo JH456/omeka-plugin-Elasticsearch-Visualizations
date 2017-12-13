@@ -1,3 +1,4 @@
+<?php queue_js_file('elasticsearch'); ?>
 <?php echo head(array(
     'title' => __('Elasticsearch | Index Items')
 )); ?>
@@ -21,14 +22,17 @@
             <th>Started</th>
             <th>Stopped</th>
         </thead>
+    <?php $jobInProgress = false; ?>
     <?php foreach($jobs as $job): ?>
-        <tr>
+        <?php if(in_array($job->status, array('starting', 'in progress'))) { $jobInProgress = true; } ?>
+        <tr class="<?php echo $jobInProgress ? 'jobinprogress' : ''; ?>">
             <td><?php echo $job->id; ?></td>
             <td><?php echo $job->user_id; ?></td>
             <td><?php echo $job->status; ?></td>
             <td><?php echo $job->started; ?></td>
             <td><?php echo $job->stopped; ?></td>
         </tr>
+
     <?php endforeach; ?>
     </table>
 </div>

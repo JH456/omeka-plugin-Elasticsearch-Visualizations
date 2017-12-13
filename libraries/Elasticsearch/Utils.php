@@ -122,6 +122,29 @@ class Elasticsearch_Utils {
     }
 
     /**
+     * Truncates a string for display.
+     *
+     * @param string $text the text to truncate
+     * @param int $length the length to truncate to
+     * @param boolean $ellipsis show an ellipsis or not
+     * @return string
+     */
+    public static function truncateText($text, $length, $ellipsis=true) {
+        $truncated = substr($text, 0, $length);
+        if($ellipsis && strlen($truncated) > $length) {
+            return "$truncated...";
+        }
+        return $truncated;
+    }
+
+    /**
+     * Formats an ISO8601 date for display.
+     */
+    public static function formatDate($iso8601date) {
+        return date_format(date_create($iso8601date), "F j, Y");
+    }
+
+    /**
      * Returns true if the user is allowed to access the admin functionality.
      *
      * Super users always have permission, but other roles must be explicitly

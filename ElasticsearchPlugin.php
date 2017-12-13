@@ -15,19 +15,24 @@ class ElasticsearchPlugin extends Omeka_Plugin_AbstractPlugin {
         'install',
         'uninstall',
         'upgrade',
-        'define_routes',
-        'after_save_record',
-        'after_save_item',
-        'after_save_element',
-        'before_delete_record',
-        'before_delete_item',
-        'before_delete_element'
+        'define_routes'
     );
 
     protected $_filters = array(
         'admin_navigation_main',
         'search_form_default_action'
     );
+
+    public function __construct() {
+        parent::__construct();
+        $docIndex = Elasticsearch_Config::index();
+        $this->integrationMgr = new Elasticsearch_IntegrationManager($docIndex);
+    }
+
+    public function setUp() {
+        parent::setUp();
+        $this->integrationMgr->applyHooksAndFilters();
+    }
 
     public function hookInstall() {
         $this->_setOptions();
@@ -43,33 +48,6 @@ class ElasticsearchPlugin extends Omeka_Plugin_AbstractPlugin {
     public function hookDefineRoutes($args) {
         $config = new Zend_Config_Ini(ELASTICSEARCH_PLUGIN_DIR.'/routes.ini');
         $args['router']->addConfig($config);
-    }
-
-    public function hookAfterSaveRecord($args) {
-        $record = $args['record'];
-    }
-
-    public function hookAfterSaveItem($args) {
-        $record = $args['record'];
-        Elasticsearch_Helper_Index::indexItem($record);
-    }
-
-    public function hookAfterSaveElement($args) {
-        $record = $args['record'];
-        $insert = $args['insert'];
-    }
-
-    public function hookBeforeDeleteRecord($args) {
-        $record = $args['record'];
-    }
-
-    public function hookBeforeDeleteItem($args) {
-        $record = $args['record'];
-        Elasticsearch_Helper_Index::deleteItem($record);
-    }
-
-    public function hookBeforeDeleteElement($args) {
-        $record = $args['record'];
     }
 
     public function filterAdminNavigationMain($nav) {
@@ -108,4 +86,5 @@ class ElasticsearchPlugin extends Omeka_Plugin_AbstractPlugin {
         delete_option('elasticsearch_user');
         delete_option('elasticsearch_pass');
     }
+
 }
