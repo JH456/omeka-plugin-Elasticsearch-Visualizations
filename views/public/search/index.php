@@ -1,8 +1,10 @@
-<?php queue_css_file('results'); ?>
-<?php queue_js_file('results'); ?>
+<?php queue_css_file('elasticsearch-results'); ?>
+<?php queue_js_file('elasticsearch'); ?>
+<?php queue_js_string('ElasticsearchPlugin.setupSearchResults();'); ?>
 <?php echo head(array('title' => __('Elasticsearch')));?>
 
-<h1><?php echo __('Search') . (isset($results['hits']['total']) ? " ({$results['hits']['total']} results)" : ''); ?></h1>
+<?php $totalResults = isset($results['hits']['total']) ? $results['hits']['total'].' '.__('results') : null; ?>
+<h1><?php echo __('Search') . " ($totalResults)"; ?></h1>
 
 <div id="elasticsearch-search">
     <form id="elasticsearch-search-form">
@@ -18,7 +20,7 @@
         <?php endforeach; ?>
         <input type="submit" value="Search" />
         <br>
-        <a href="javascript:void(0);" id="elasticsearch-help-btn" style="display:block;clear:both;">Search Help</a>
+        <a href="javascript:void(0);" id="elasticsearch-help-btn" style="display:block;clear:both;"><?php echo __("Search Help"); ?></a>
     </form>
 </div>
 
@@ -46,7 +48,7 @@
                 <?php echo $this->partial('search/partials/hit.php', array('hit' => $hit)); ?>
             <?php endforeach; ?>
         <?php else: ?>
-            Search did not return any results.
+            <?php echo __("Search did not return any results."); ?>
         <?php endif; ?>
 
         <?php echo pagination_links(); ?>
@@ -54,10 +56,9 @@
 
 <?php else: ?>
     <section>
-        <h2>Search failed</h2>
-        <p>The search query could not be executed. Please check your search query and try again.</p>
+        <h2><?php echo __("Search failed"); ?></h2>
+        <p><?php echo __("The search query could not be executed. Please check your search query and try again."); ?></p>
     </section>
 <?php endif;  ?>
-
 
 <?php echo foot();

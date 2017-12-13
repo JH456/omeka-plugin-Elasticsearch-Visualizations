@@ -123,6 +123,7 @@ class Elasticsearch_Helper_Index {
                     'updated'     => ['type' => 'date'],
                     'tags'        => ['type' => 'keyword'],
                     'slug'        => ['type' => 'keyword'],
+                    'url'         => ['type' => 'keyword'],
 
                     // Item-Specific
                     'collection' => ['type' => 'text'],
@@ -143,6 +144,23 @@ class Elasticsearch_Helper_Index {
                         'properties' => [
                             'text'        => ['type' => 'text'],
                             'attachments' => ['type' => 'text']
+                        ]
+                    ],
+
+                    // Neatline-Specific
+                    'neatline' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'records' => [
+                                'type' => 'nested',
+                                'properties' => [
+                                    'id' => ['type' => 'integer', 'index' => false],
+                                    'title' => ['type' => 'text'],
+                                    'body' => ['type' => 'text'],
+                                    'created' => ['type' => 'date'],
+                                    'updated' => ['type' => 'date'],
+                                ]
+                            ]
                         ]
                     ]
                 ]
