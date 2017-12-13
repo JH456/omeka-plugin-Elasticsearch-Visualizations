@@ -37,7 +37,4 @@
     </table>
 </div>
 
-<?php if($jobInProgress === true): ?>
-<script>ElasticsearchPlugin.refreshPage(1000);</script>
-<?php endif; ?>
 <?php echo foot(); ?>
