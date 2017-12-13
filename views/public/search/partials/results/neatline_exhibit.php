@@ -2,7 +2,7 @@
 
 <ul>
     <li data-field="resulttype"><b>Result Type:</b> <?php echo $hit['_source']['resulttype']; ?></li>
-    <li data-field="resulttype"><b>Title: </b>: <?php echo $hit['_source']['title']; ?></li>
+    <li data-field="resulttype"><b>Title: </b> <?php echo $hit['_source']['title']; ?></li>
     <?php if($text): ?>
         <li data-field="text"><b>Narrative:</b>
             <?php echo Elasticsearch_Utils::truncateText($text, $maxTextLength); ?>

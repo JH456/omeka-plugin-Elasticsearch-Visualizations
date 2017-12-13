@@ -26,7 +26,7 @@
             <br>
             <code>title:"Inhabited Spaces"</code><br>
             <code>collection:Map*</code><br>
-            <code>itemType:("Historical Map" OR "Still Image")</code><br>
+            <code>itemtype:("Historical Map" OR "Still Image")</code><br>
             <code>resulttype:Exhibit</code><br>
             <code>featured:true</code><br>
             <code>tags:forts</code><br>
