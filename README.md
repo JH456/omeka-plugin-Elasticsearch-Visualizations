@@ -1,6 +1,6 @@
 # Omeka Elasticsearch Plugin
 
-This plugin integrates [elasticsearch](https://www.elastic.co/products/elasticsearch) with Omeka, overriding the default search functionality. Inspired by the excellent [SolrSearch](https://github.com/scholarslab/SolrSearch) plugin, elasticsearch is similar to Solr in that it allows you to take advantage of faceting, snippet highlighting, and advanced full text search capabilities. 
+This plugin integrates [elasticsearch](https://www.elastic.co/products/elasticsearch) with [Omeka Classic](http://omeka.org/classic/), overriding the default search functionality. Inspired by the excellent [SolrSearch](https://github.com/scholarslab/SolrSearch) plugin, elasticsearch is similar to Solr in that it allows you to take advantage of faceting, snippet highlighting, and advanced full text search capabilities. 
 
 Depending on your needs, you can get up and running with the elasticsearch plugin by going one of these two routes:
 
