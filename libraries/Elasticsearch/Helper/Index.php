@@ -304,7 +304,7 @@ class Elasticsearch_Helper_Index {
         // Add filters
         $filters = self::getFacetFilters($facets);
         if(!$showNotPublic) {
-            $filters = array_merge($filters, ['term' => ['public' => true]]);
+            $filters[] = ['term' => ['public' => true]];
         }
         if(count($filters) > 0) {
             $body['query']['bool']['filter'] = $filters;
@@ -325,7 +325,7 @@ class Elasticsearch_Helper_Index {
             'size' => $limit,
             'body' => $body
         ];
-        _log("elasticsearch search params: ".var_export($params['body']['query'],1), Zend_Log::INFO);
+        _log("elasticsearch search params: ".var_export($params,1), Zend_Log::DEBUG);
 
         return self::client()->search($params);
     }
