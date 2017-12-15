@@ -7,7 +7,7 @@ This plugin integrates [elasticsearch](https://www.elastic.co/products/elasticse
 - Omeka Classic v2.5+ running on PHP v5.4+
 - Elasticsearch 5.5+
 
-This plugin assumes that you already have an elasticserach cluster setup for use with your Omeka site, but if not, you will need to set one up. Depending on your needs, you have two options:
+This plugin assumes that you already have an elasticsearch cluster setup for use with your Omeka site, but if not, you will need to set one up. Depending on your needs, you have two options:
 
 1. You can run your own elasticsearch cluster, so you have full control over the service. See the [elasticsearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html) for installation help.
 2. You can use a service provider such as [Amazon's Elasticsearch Service](https://aws.amazon.com/elasticsearch-service/).
@@ -18,7 +18,7 @@ This plugin assumes that you already have an elasticserach cluster setup for use
 2. Copy the example configuration file: `cp elasticsearch.ini.example elasticsearch.ini`. The default configuration assumes you have elasticsearch running locally on `localhost:9200`. You can change this later on the admin interface, but this is a good place to set the default connection information if you know it ahead of time.
 3. Install the plugin on the Omeka admin interface. If the install succeeded, you will see an _Elasticsearch_ entry appear in the admin navigation. 
 4. Navigate to _Elasticsearch_ in the admin navigation and update/save your settings.
-5. Navigate to the _Index_ tab of the plugin and click the **Clear and Reindex** button to index your site's content. You can skip this step if the site does not have any content yet.
+5. Navigate to the _Index_ tab of the plugin and click the **Clear and Reindex** button to index your site's content.
 6. Try a search query by using the search bar on the public site. The admin site uses the existing omeka search functionality, so be sure to navigate to the public site first.
 
 ## Usage
