@@ -12,9 +12,9 @@ class Elasticsearch_Helper_Index {
      */
     public static function indexAll() {
         try {
-            $docIndex = Elasticsearch_Config::index();
-            $integrationMgr = new Elasticsearch_IntegrationManager($docIndex);
-            $integrationMgr->indexAll();
+            $docIndex = self::docIndex();
+            $integrationMgr = new Elasticsearch_IntegrationManager();
+            $integrationMgr->setIndex($docIndex)->indexAll();
         } catch(Exception $e) {
             _log($e, Zend_Log::ERR);
         }
@@ -28,9 +28,8 @@ class Elasticsearch_Helper_Index {
      * @return void
      */
     public static function createIndex() {
-        $docIndex = Elasticsearch_Config::index();
         $params = [
-            'index' => $docIndex,
+            'index' => self::docIndex(),
             'body' => [
                 'settings' => [],
                 'mappings' => self::getMappings()
@@ -46,8 +45,7 @@ class Elasticsearch_Helper_Index {
      * the index will be created automatically.
      */
     public static function deleteAll() {
-        $docIndex = Elasticsearch_Config::index();
-        $params = ['index' => $docIndex];
+        $params = ['index' => self::docIndex()];
         if(self::client(['nobody' => true])->indices()->exists($params)) {
             self::client()->indices()->delete($params);
         }
@@ -78,7 +76,7 @@ class Elasticsearch_Helper_Index {
      * @return array
      */
     public static function getReindexJobs(array $options=array()) {
-        $limit = isset($options['limit']) ? $options['limit'] : 25;
+        $limit = isset($options['limit']) ? $options['limit'] : 10;
         $order = isset($options['order']) ? $options['order'] : 'id desc';
         $table = get_db()->getTable('Process');
         $select = $table->getSelect()->limit($limit)->order($order);
@@ -226,7 +224,8 @@ class Elasticsearch_Helper_Index {
             'itemtype'   => 'Item Types',
             'collection' => 'Collections',
             'exhibit'    => 'Exhibits',
-            'tags'       => 'Tags'
+            'tags'       => 'Tags',
+            'featured'   => 'Featured'
         );
         return $aggregation_labels;
     }
@@ -270,7 +269,6 @@ class Elasticsearch_Helper_Index {
      * @return array
      */
     public static function search($options) {
-        $docIndex = Elasticsearch_Config::index();
         if(!isset($options['query']) || !is_array($options['query'])) {
             throw new Exception("Query parameter is required to execute elasticsearch query.");
         }
@@ -320,7 +318,7 @@ class Elasticsearch_Helper_Index {
         }
 
         $params = [
-            'index' => $docIndex,
+            'index' => self::docIndex(),
             'from' => $offset,
             'size' => $limit,
             'body' => $body
@@ -328,5 +326,14 @@ class Elasticsearch_Helper_Index {
         _log("elasticsearch search params: ".var_export($params,1), Zend_Log::DEBUG);
 
         return self::client()->search($params);
+    }
+    
+    /**
+     * Returns the elasticsearch index name.
+     * 
+     * @return string
+     */
+    public static function docIndex() {
+        return get_option('elasticsearch_index');
     }
 }

@@ -13,6 +13,9 @@ abstract class Elasticsearch_Integration_BaseIntegration {
      */
     public function __construct($docIndex) {
         $this->_docIndex = $docIndex;
+        if(!isset($this->_docIndex) || $this->_docIndex == "") {
+            throw Exception("docIndex parameter must be a non-empty string");
+        }
     }
 
     /**

@@ -158,7 +158,7 @@ class Elasticsearch_Integration_Exhibits extends Elasticsearch_Integration_BaseI
         $exhibit = $exhibitPage->getExhibit();
         $doc = new Elasticsearch_Document($this->_docIndex, "exhibit_page_{$exhibitPage->id}");
         $doc->setFields([
-            'resulttype' => 'Exhibit',
+            'resulttype' => 'ExhibitPage',
             'model'      => 'ExhibitPage',
             'modelid'    => $exhibitPage->id,
             'title'      => $exhibitPage->title,

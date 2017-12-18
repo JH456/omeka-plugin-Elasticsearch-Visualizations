@@ -39,7 +39,11 @@ class Elasticsearch_AdminController extends Omeka_Controller_AbstractActionContr
 
     public function reindexAction() {
         $this->_handlePermissions();
-        if ($this->_request->isPost()) {
+        $form = new Elasticsearch_Form_Index();
+        if ($this->_request->isPost()&& $form->isValid($_POST)) {
+            foreach($form->getValues() as $option => $value) {
+                set_option($option, $value);
+            }
             try {
                 $job_dispatcher = Zend_Registry::get('job_dispatcher');
                 $job_dispatcher->setUser($this->getCurrentUser());

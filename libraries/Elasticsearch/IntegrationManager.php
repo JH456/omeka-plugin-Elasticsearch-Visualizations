@@ -35,9 +35,18 @@ class Elasticsearch_IntegrationManager {
      *
      * @param $docIndex defines the elasticsearch index to use
      */
-    public function __construct($docIndex) {
-        $this->_docIndex = $docIndex;
+    public function __construct() {
         self::_detectIntegrations();
+    }
+
+    /**
+     * Sets the elasticsearch document index to use.
+     *
+     * @return $this
+     */
+    public function setIndex($docIndex) {
+        $this->_docIndex = $docIndex;
+        return $this;
     }
 
     /**

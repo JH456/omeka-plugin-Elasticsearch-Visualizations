@@ -25,13 +25,16 @@ class ElasticsearchPlugin extends Omeka_Plugin_AbstractPlugin {
 
     public function __construct() {
         parent::__construct();
-        $docIndex = Elasticsearch_Config::index();
-        $this->integrationMgr = new Elasticsearch_IntegrationManager($docIndex);
+        $this->integrationMgr = new Elasticsearch_IntegrationManager();
     }
 
     public function setUp() {
         parent::setUp();
-        $this->integrationMgr->applyHooksAndFilters();
+        $docIndex = get_option('elasticsearch_index');
+        if(!$docIndex) {
+            $docIndex = Elasticsearch_Config::index();
+        }
+        $this->integrationMgr->setIndex($docIndex)->applyHooksAndFilters();
     }
 
     public function hookInstall() {
@@ -70,6 +73,8 @@ class ElasticsearchPlugin extends Omeka_Plugin_AbstractPlugin {
     protected function _setOptions() {
         $service = Elasticsearch_Config::service();
         $host = Elasticsearch_Config::host();
+        $docIndex = Elasticsearch_Config::index();
+        set_option('elasticsearch_index', $docIndex);
         set_option('elasticsearch_aws', $service == 'aws' ? 1 : 0);
         set_option('elasticsearch_host', $host['host']);
         set_option('elasticsearch_port', $host['port']);
@@ -79,6 +84,7 @@ class ElasticsearchPlugin extends Omeka_Plugin_AbstractPlugin {
     }
 
     protected function _clearOptions() {
+        delete_option('elasticsearch_index');
         delete_option('elasticsearch_aws');
         delete_option('elasticsearch_host');
         delete_option('elasticsearch_port');
