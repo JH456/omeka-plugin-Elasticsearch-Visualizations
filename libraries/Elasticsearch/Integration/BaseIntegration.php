@@ -87,4 +87,21 @@ abstract class Elasticsearch_Integration_BaseIntegration {
         return $date->format('c');
     }
 
+    /**
+     * Retrieve object records.
+     *
+     * @return array
+     */
+    protected function _fetchObjects($className) {
+        if(!class_exists($className)) {
+            $this->_log("Cannot fetch objects for $className because class does not exist!", Zend_Log::ERR);
+            return null;
+        }
+        $db = get_db();
+        $table = $db->getTable($className);
+        $select = $table->getSelect();
+        $table->applySorting($select, 'id', 'ASC');
+        return $table->fetchObjects($select);
+    }
+
 }

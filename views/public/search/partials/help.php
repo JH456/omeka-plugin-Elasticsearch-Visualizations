@@ -10,12 +10,12 @@
             Search by field:
         </td>
         <td>
-            Possible fields you can search by include:
+            Some possible fields you can search by include:
             <i>title</i>,
             <i>description</i>,
             <i>collection</i>,
             <i>exhibit</i>,
-            <i>itemType</i>,
+            <i>itemtype</i>,
             <i>resulttype</i>,
             <i>featured</i>,
             <i>tags</i>,

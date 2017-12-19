@@ -129,22 +129,11 @@ class Elasticsearch_Integration_Exhibits extends Elasticsearch_Integration_BaseI
      * @return array
      */
     public function getExhibitDocuments() {
-        $db = get_db();
-        $className = 'Exhibit';
-        if(!class_exists($className)) {
-            $this->_log("Unable to get documents because $className class does not exist!", Zend_Log::ERR);
-            return null;
-        }
-        $table = $db->getTable($className);
-        $select = $table->getSelect();
-        $table->applySorting($select, 'id', 'ASC');
-        $exhibits = $table->fetchObjects($select);
-
         $docs = [];
+        $exhibits = $this->_fetchObjects('Exhibit');
         foreach($exhibits as $exhibit) {
             $docs[] = $this->getExhibitDocument($exhibit);
         }
-
         return $docs;
     }
 
@@ -193,22 +182,11 @@ class Elasticsearch_Integration_Exhibits extends Elasticsearch_Integration_BaseI
      * @return array
      */
     public function getExhibitPageDocuments() {
-        $db = get_db();
-        $className = 'ExhibitPage';
-        if(!class_exists($className)) {
-            $this->_log("Unable to get documents because $className class does not exist!", Zend_Log::ERR);
-            return null;
-        }
-        $table = $db->getTable($className);
-        $select = $table->getSelect();
-        $table->applySorting($select, 'id', 'ASC');
-        $exhibitPages = $table->fetchObjects($select);
-
         $docs = [];
+        $exhibitPages = $this->_fetchObjects('ExhibitPage');
         foreach($exhibitPages as $exhibitPage) {
             $docs[] = $this->getExhibitPageDocument($exhibitPage);
         }
-
         return $docs;
     }
 

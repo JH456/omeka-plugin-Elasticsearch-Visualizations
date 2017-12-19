@@ -111,18 +111,8 @@ class Elasticsearch_Integration_Items extends Elasticsearch_Integration_BaseInte
      * @return array
      */
     public function getItemDocuments() {
-        $db = get_db();
-        $className = 'Item';
-        if(!class_exists($className)) {
-            $this->_log("Unable to get documents because $className class does not exist!", Zend_Log::ERR);
-            return null;
-        }
-        $table = $db->getTable($className);
-        $select = $table->getSelect();
-        $table->applySorting($select, 'id', 'ASC');
-        $items = $table->fetchObjects($select);
-
         $docs = [];
+        $items = $this->_fetchObjects('Item');
         foreach($items as $item) {
             $docs[] = $this->getItemDocument($item);
         }

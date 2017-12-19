@@ -75,6 +75,19 @@ class Elasticsearch_Document {
     }
 
     /**
+     * Retrieves the document from the index.
+     *
+     * @return client response
+     */
+    public function get() {
+        $client = Elasticsearch_Client::create();
+        if(!isset($this->id)) {
+            throw new Exception("document ID must be specified");
+        }
+        return $client->get($this->getParams());
+    }
+
+    /**
      * Returns the params to bulk index an array of documents.
      *
      * @param array $docs

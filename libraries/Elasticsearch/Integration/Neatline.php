@@ -6,14 +6,15 @@ class Elasticsearch_Integration_Neatline extends Elasticsearch_Integration_BaseI
         'after_save_neatline_record',
         'after_delete_neatline_record',
         'after_save_neatline_exhibit',
+        'before_delete_neatline_exhibit',
         'after_delete_neatline_exhibit'
     );
 
     /**
- * Hook for when a neatline record is being saved.
- *
- * @param array $args
- */
+    * Hook for when a neatline record is being saved.
+    *
+    * @param array $args
+    */
     public function hookAfterSaveNeatlineRecord($args)
     {
         $this->_log("hookAfterSaveNeatlineRecord: {$args['record']->id}");
@@ -39,7 +40,38 @@ class Elasticsearch_Integration_Neatline extends Elasticsearch_Integration_BaseI
     public function hookAfterSaveNeatlineExhibit($args)
     {
         $this->_log("hookAfterSaveNeatlineExhibit: {$args['record']->id}");
+        $neatlineRecords = $this->_getRecords($args['record']->id);
         $this->indexNeatlineExhibit($args['record']);
+        $this->indexNeatlineRecords($neatlineRecords); // ensure records reflect latest public status
+    }
+
+    /**
+     * Hook for when a neatline exhibit is about to be deleted.
+     *
+     * This hook should delete an exhibit's child records.
+     *
+     * NOTE: unfortunately, NeatlineExhibit's beforeDelete() method deletes all child records before
+     * this plugin/hook method is called, so it's not possible to simply query the database for the records
+     * and then issue the delete request to elasticsearch. Instead, we query elasticsearch for the exhibit document,
+     * which contains the list of the associated records that need to be deleted.
+     *
+     * @param array $args
+     */
+    public function hookBeforeDeleteNeatlineExhibit($args)
+    {
+        $neatlineExhibit = $args['record'];
+        $this->_log("hookBeforeDeleteNeatlineExhibit: {$neatlineExhibit->id}");
+
+        $doc = new Elasticsearch_Document($this->_docIndex, "neatline_exhibit_{$neatlineExhibit->id}");
+        $res = $doc->get();
+        $this->_log(var_export($res,1), Zend_Log::DEBUG);
+        $has_records = $res && isset($res['_source']) && isset($res['_source']['neatlineRecords']);
+
+        if($has_records) {
+            foreach($res['_source']['neatlineRecords'] as $neatlineRecordId) {
+                $this->deleteNeatlineRecordById($neatlineRecordId);
+            }
+        }
     }
 
     /**
@@ -49,7 +81,6 @@ class Elasticsearch_Integration_Neatline extends Elasticsearch_Integration_BaseI
      */
     public function hookAfterDeleteNeatlineExhibit($args)
     {
-        $this->_log("hookAfterDeleteNeatlineExhibit: {$args['record']->id}");
         $this->deleteNeatlineExhibit($args['record']);
     }
 
@@ -60,9 +91,18 @@ class Elasticsearch_Integration_Neatline extends Elasticsearch_Integration_BaseI
      * @return array
      */
     public function indexNeatlineRecord($neatlineRecord) {
-        $exhibit = $neatlineRecord->getExhibit();
-        if($exhibit) {
-            $this->indexNeatlineExhibit($exhibit);
+        $doc = $this->getNeatlineRecordDocument($neatlineRecord);
+        return $doc->index();
+    }
+
+    /**
+     * Indexes an array of neatline records.
+     *
+     * @param $neatline
+     */
+    public function indexNeatlineRecords($neatlineRecords) {
+        foreach($neatlineRecords as $neatlineRecord) {
+            $this->indexNeatlineRecord($neatlineRecord);
         }
     }
 
@@ -72,9 +112,29 @@ class Elasticsearch_Integration_Neatline extends Elasticsearch_Integration_BaseI
      * @param $exhibit
      */
     public function deleteNeatlineRecord($neatlineRecord) {
-        $exhibit = $neatlineRecord->getExhibit();
-        if($exhibit) {
-            $this->indexNeatlineExhibit($exhibit);
+        $this->deleteNeatlineRecordById($neatlineRecord->id);
+    }
+
+    /**
+     * Deletes a neatline record from the index.
+     *
+     * @param $exhibit
+     */
+    public function deleteNeatlineRecordById($neatlineRecordId) {
+        $this->_log("deleting neatline record $neatlineRecordId");
+        $doc = new Elasticsearch_Document($this->_docIndex, "neatline_record_{$neatlineRecordId}");
+        $doc->delete();
+    }
+
+    /**
+     * Deletes an array of neatline records.
+     *
+     * @param $neatline
+     * @return array
+     */
+    public function deleteNeatlineRecords($neatlineRecords) {
+        foreach($neatlineRecords as $neatlineRecord) {
+            $this->deleteNeatlineRecord($neatlineRecord);
         }
     }
 
@@ -95,6 +155,7 @@ class Elasticsearch_Integration_Neatline extends Elasticsearch_Integration_BaseI
      * @param $exhibit
      */
     public function deleteNeatlineExhibit($neatlineExhibit) {
+        $this->_log("deleting neatline exhibit {$neatlineExhibit->id}");
         $doc = new Elasticsearch_Document($this->_docIndex, "neatline_exhibit_{$neatlineExhibit->id}");
         return $doc->delete();
     }
@@ -108,7 +169,7 @@ class Elasticsearch_Integration_Neatline extends Elasticsearch_Integration_BaseI
     public function getNeatlineExhibitDocument($neatlineExhibit) {
         $doc = new Elasticsearch_Document($this->_docIndex, "neatline_exhibit_{$neatlineExhibit->id}");
         $doc->setFields([
-            'resulttype' => 'Neatline',
+            'resulttype' => 'NeatlineExhibit',
             'model'      => 'NeatlineExhibit',
             'modelid'    => $neatlineExhibit->id,
             'public'     => (bool) $neatlineExhibit->public,
@@ -120,37 +181,14 @@ class Elasticsearch_Integration_Neatline extends Elasticsearch_Integration_BaseI
             'updated'    => $this->_getDate($neatlineExhibit->modified)
         ]);
 
-        $records = array();
+        $recordIds = [];
         $neatlineRecords = $this->_getRecords($neatlineExhibit->id);
-        foreach($neatlineRecords as $neatlineRecord) {
-            $records[] = array(
-                'id'      => $neatlineRecord->id,
-                'title'   => $neatlineRecord->title,
-                'body'    => $neatlineRecord->body,
-                'created' => $this->_getDate($neatlineRecord->added),
-                'updated' => $this->_getDate($neatlineRecord->modified)
-            );
+        foreach($neatlineRecords as $r) {
+            $recordIds[] = $r->id;
         }
-
-        $doc->setField('neatline', array('records' => $records));
+        $doc->setField('neatlineRecords', $recordIds);
 
         return $doc;
-    }
-
-    /**
-     * Retrieve records for a neatline exhibit.
-     *
-     * @return array
-     */
-    protected function _getRecords($exhibit_id) {
-        $table = get_db()->getTable('NeatlineRecord');
-        if(!$table) {
-            return array();
-        }
-        $select = $table->getSelect()->where('exhibit_id = ?');
-        $table->applySorting($select, 'id', 'ASC');
-        $neatlineRecords = $table->fetchObjects($select, array($exhibit_id));
-        return $neatlineRecords;
     }
 
     /**
@@ -159,22 +197,55 @@ class Elasticsearch_Integration_Neatline extends Elasticsearch_Integration_BaseI
      * @return array|null
      */
     public function getNeatlineExhibitDocuments() {
-        $db = get_db();
-        $className = 'NeatlineExhibit';
-        if(!class_exists($className)) {
-            $this->_log("Unable to get documents because $className class does not exist!", Zend_Log::ERR);
-            return null;
-        }
-        $table = $db->getTable($className);
-        $select = $table->getSelect();
-        $table->applySorting($select, 'id', 'ASC');
-        $neatlineExhibits = $table->fetchObjects($select);
-
         $docs = [];
+        $neatlineExhibits = $this->_fetchObjects('NeatlineExhibit');
         foreach($neatlineExhibits as $neatlineExhibit) {
             $docs[] = $this->getNeatlineExhibitDocument($neatlineExhibit);
         }
+        return $docs;
+    }
 
+    /**
+     * Returns a neatline as a document.
+     *
+     * @param $neatlineRecord
+     * @return Elasticsearch_Document
+     */
+    public function getNeatlineRecordDocument($neatlineRecord) {
+        $doc = new Elasticsearch_Document($this->_docIndex, "neatline_record_{$neatlineRecord->id}");
+        $doc->setFields([
+            'resulttype' => 'NeatlineRecord',
+            'model'      => 'NeatlineRecord',
+            'modelid'    => $neatlineRecord->id,
+            'title'      => $neatlineRecord->title,
+            'text'       => $neatlineRecord->body,
+            'slug'       => $neatlineRecord->slug,
+            'public'     => false,
+            'created'    => $this->_getDate($neatlineRecord->added),
+            'updated'    => $this->_getDate($neatlineRecord->modified)
+        ]);
+
+        $neatlineExhibit = $neatlineRecord->getExhibit();
+        if($neatlineExhibit) {
+            $doc->setField('public', (bool) $neatlineExhibit->public);
+            $doc->setField('neatline', $neatlineExhibit->title);
+            $doc->setField('url', "neatline/show/{$neatlineExhibit->slug}#records/{$neatlineRecord->id}");
+        }
+
+        return $doc;
+    }
+
+    /**
+     * Get array of documents to index.
+     *
+     * @return array|null
+     */
+    public function getNeatlineRecordDocuments() {
+        $docs = [];
+        $neatlineRecords = $this->_fetchObjects('NeatlineRecord');
+        foreach($neatlineRecords as $neatlineRecord) {
+            $docs[] = $this->getNeatlineRecordDocument($neatlineRecord);
+        }
         return $docs;
     }
 
@@ -187,5 +258,27 @@ class Elasticsearch_Integration_Neatline extends Elasticsearch_Integration_BaseI
             $this->_log('indexAll neatline_exhibit: '.count($docs));
             Elasticsearch_Document::bulkIndex($docs);
         }
+
+        $docs = $this->getNeatlineRecordDocuments();
+        if(isset($docs)) {
+            $this->_log('indexAll neatline_record: '.count($docs));
+            Elasticsearch_Document::bulkIndex($docs);
+        }
+    }
+
+    /**
+     * Retrieve records for a neatline exhibit.
+     *
+     * @return array
+     */
+    protected function _getRecords($exhibitId) {
+        $table = get_db()->getTable('NeatlineRecord');
+        if(!$table) {
+            return array();
+        }
+        $select = $table->getSelect()->where('exhibit_id = ?');
+        $table->applySorting($select, 'id', 'ASC');
+        $neatlineRecords = $table->fetchObjects($select, array($exhibitId));
+        return $neatlineRecords;
     }
 }

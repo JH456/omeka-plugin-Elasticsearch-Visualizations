@@ -78,22 +78,11 @@ class Elasticsearch_Integration_SimplePages extends Elasticsearch_Integration_Ba
      * @return array
      */
     public function getSimplePageDocuments() {
-        $db = get_db();
-        $className = 'SimplePagesPage';
-        if(!class_exists($className)) {
-            $this->_log("Unable to get documents because $className class does not exist!", Zend_Log::ERR);
-            return null;
-        }
-        $table = $db->getTable($className);
-        $select = $table->getSelect();
-        $table->applySorting($select, 'id', 'ASC');
-        $simplePages = $table->fetchObjects($select);
-
         $docs = [];
+        $simplePages = $this->_fetchObjects('SimplePagesPage');
         foreach($simplePages as $simplePage) {
             $docs[] = $this->getSimplePageDocument($simplePage);
         }
-
         return $docs;
     }
 

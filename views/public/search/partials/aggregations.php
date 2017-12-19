@@ -27,6 +27,7 @@ $applied_facets = $query['facets'];
     <?php if(count($aggregations[$agg_name]['buckets']) > 0): ?>
         <h4><?php echo $agg_label; ?></h4>
         <ul>
+            <?php $buckets = $aggregations[$agg_name]['buckets']; ?>
             <?php foreach($aggregations[$agg_name]['buckets'] as $agg): ?>
                 <?php $facet_url = get_view()->url('/elasticsearch') . '?' . Elasticsearch_Utils::addFacetToQuery($querystr, $agg_name, $agg['key']); ?>
                 <?php $agg_key = isset($agg['key_as_string']) ? $agg['key_as_string'] : $agg['key']; ?>

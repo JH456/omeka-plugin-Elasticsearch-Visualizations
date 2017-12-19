@@ -141,21 +141,8 @@ class Elasticsearch_Helper_Index {
                     ],
 
                     // Neatline-Specific
-                    'neatline' => [
-                        'type' => 'object',
-                        'properties' => [
-                            'records' => [
-                                'type' => 'nested',
-                                'properties' => [
-                                    'id' => ['type' => 'integer', 'index' => false],
-                                    'title' => ['type' => 'text'],
-                                    'body' => ['type' => 'text'],
-                                    'created' => ['type' => 'date'],
-                                    'updated' => ['type' => 'date'],
-                                ]
-                            ]
-                        ]
-                    ]
+                    'neatline'        => ['type' => 'text'],
+                    'neatlineRecords' => ['type' => 'keyword', 'index' => false]
                 ]
             ]
         ];
