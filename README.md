@@ -101,4 +101,6 @@ An example access policy that allows a `<USER>` to do anything on the elasticsea
 }
 ```
 
+## Latest Build
 
+[![Build Status](https://travis-ci.org/Harvard-ATG/omeka-plugin-Elasticsearch.svg?branch=master)](https://travis-ci.org/Harvard-ATG/omeka-plugin-Elasticsearch)
