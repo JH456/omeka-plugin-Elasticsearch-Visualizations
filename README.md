@@ -4,7 +4,7 @@ This plugin integrates [elasticsearch](https://www.elastic.co/products/elasticse
 
 ## Requirements
 
-- Omeka Classic v2.5+ running on PHP v5.4+
+- Omeka Classic v2.5+ running on PHP v7.0+
 - Elasticsearch 5.5+
 
 This plugin assumes that you already have an elasticsearch cluster setup for use with your Omeka site, but if not, you will need to set one up. Depending on your needs, you have two options:
