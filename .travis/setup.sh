@@ -18,9 +18,9 @@ unzip -q /tmp/omeka-2.5.1.zip -d /tmp
 mv -v /tmp/omeka-2.5.1 $OMEKA_CORE_DIR
 
 # Update Omeka db.ini
-sed -i 's/^host.*/host = "localhost"/' $OMEKA_CORE_DIR/application/db.ini
-sed -i 's/^user.*/user = "root"/' $OMEKA_CORE_DIR/application/db.ini
-sed -i 's/^dbname.*/dbname = "omeka"/' $OMEKA_CORE_DIR/application/db.ini
+sed -i 's/^host.*/host = "localhost"/' $OMEKA_CORE_DIR/db.ini
+sed -i 's/^user.*/user = "root"/' $OMEKA_CORE_DIR/db.ini
+sed -i 's/^dbname.*/dbname = "omeka"/' $OMEKA_CORE_DIR/db.ini
 
 # move plugin into place and prepare for phpunit call
 mv -v $plugin_src $plugin_dest
