@@ -1,7 +1,6 @@
 <?php
 
-abstract class Elasticsearch_Integration_BaseIntegration {
-    protected $_active = true;
+abstract class Elasticsearch_Integration_BaseIntegration implements Elasticsearch_Integration_BaseInterface {
     protected $_docIndex = null;
     protected $_hooks = array();
     protected $_filters = array();
@@ -30,20 +29,13 @@ abstract class Elasticsearch_Integration_BaseIntegration {
      * @return boolean
      */
     public function isActive() {
-        return $this->_active;
+        return true;
     }
 
     /**
-     * Alias for applyHooksAndFilters method.
+     * Applies all hooks and filters defined by this integration.
      */
     public function integrate() {
-        $this->applyHooksAndFilters();
-    }
-
-    /**
-     * Apply all hooks and filters implemented in this integration.
-     */
-    public function applyHooksAndFilters() {
         $className = get_called_class();
         if ($this->isActive()) {
             $this->_log("Applying hooks and filters for $className");
@@ -55,24 +47,6 @@ abstract class Elasticsearch_Integration_BaseIntegration {
                 add_filter($filter, array($this, 'filter' . Inflector::camelize($filter)));
             }
         }
-    }
-
-    /**
-     * Returns the elasticsearch client.
-     *
-     * @return \Elasticsearch\Client
-     */
-    public function client(array $options = array()) {
-        return Elasticsearch_Client::create($options);
-    }
-
-    /**
-     * Logs an elasticsearch message.
-     *
-     * @param $msg
-     */
-    protected function _log($msg, $logLevel=Zend_Log::INFO) {
-        _log('Elasticsearch: '.$msg, $logLevel);
     }
 
     /**
@@ -104,4 +78,54 @@ abstract class Elasticsearch_Integration_BaseIntegration {
         return $table->fetchObjects($select);
     }
 
+    /**
+     * Deletes all indexed documents by their model keyword.
+     *
+     * @param string $model
+     */
+    protected function _deleteByQueryModel($model) {
+        $client = $this->_getClient();
+        $params = [
+            'index' => $this->_docIndex,
+            'type' => 'doc',
+            'body' => [
+                'query' => [
+                    'term' => ['model' => $model]
+                ]
+            ]
+        ];
+        $this->_log("deleteByQueryModel($model):".var_export($params,1));
+
+        $res = $client->deleteByQuery($params);
+        $this->_log("response: ".var_export($res, 1));
+
+        return $res;
+    }
+
+    /**
+     * Returns the elasticsearch client.
+     *
+     * @return \Elasticsearch\Client
+     */
+    protected function _getClient(array $options = array()) {
+        return Elasticsearch_Client::create($options);
+    }
+
+    /**
+     * Logs an elasticsearch message with the given log level (defaults to INFO).
+     *
+     * @param $msg
+     */
+    protected function _log($msg, $logLevel=Zend_Log::INFO) {
+        _log('Elasticsearch: '.$msg, $logLevel);
+    }
+
+    /**
+     * Logs a debug message.
+     *
+     * @param $msg
+     */
+    protected function _debug($msg) {
+        _log('Elasticsearch: '.$msg, Zend_Log::DEBUG);
+    }
 }

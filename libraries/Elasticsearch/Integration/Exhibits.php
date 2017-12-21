@@ -213,4 +213,12 @@ class Elasticsearch_Integration_Exhibits extends Elasticsearch_Integration_BaseI
             Elasticsearch_Document::bulkIndex($docs);
         }
     }
+
+    /**
+     * Deletes all items from the index.
+     */
+    public function deleteAll() {
+        $this->_deleteByQueryModel('ExhibitPage');
+        $this->_deleteByQueryModel('Exhibit');
+    }
 }

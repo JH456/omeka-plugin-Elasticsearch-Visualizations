@@ -144,9 +144,15 @@ class Elasticsearch_Document {
         _log("Bulk indexing ".count($docs)." documents in batches of $batchSize with timeout $timeout", Zend_Log::INFO);
 
         $responses = array();
-        for($offset = 0; $offset < count($docs); $offset += $batchSize) {
+        for($offset = 0, $batchNum = 1; $offset < count($docs); $offset += $batchSize, $batchNum++) {
+            _log("Processing batch #{$batchNum}...", Zend_Log::INFO);
             $params = self::getBulkParams($docs, $offset, $batchSize);
             $res = $client->bulk($params);
+            if($res['errors']) {
+                _log("Batch #{$batchNum} response:\n".json_encode($res, JSON_PRETTY_PRINT), Zend_Log::ERR);
+                _log("Errors detected in batch #{$batchNum} response. Aborting!", Zend_Log::ERR);
+                throw new Exception("Elasticsearch bulk API error");
+            }
             $responses[] = $res;
         }
 
