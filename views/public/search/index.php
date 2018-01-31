@@ -1,6 +1,11 @@
 <?php queue_css_file('elasticsearch-results'); ?>
 <?php queue_js_file('elasticsearch'); ?>
 <?php queue_js_string('ElasticsearchPlugin.setupSearchResults();'); ?>
+
+<?php queue_css_file('graphStyle'); ?>
+<?php queue_js_url('https://d3js.org/d3.v4.min.js'); ?>
+<?php queue_js_file('graphVisualization'); ?>
+
 <?php echo head(array('title' => __('Elasticsearch')));?>
 
 <?php $totalResults = isset($results['hits']['total']) ? $results['hits']['total'].' '.__('results') : null; ?>
@@ -33,6 +38,11 @@
 //echo "<!--".json_encode($results, JSON_PRETTY_PRINT)."-->";
 ?>
 
+<!-- Temporary Graph -->
+
+<?php echo $this->partial('search/partials/graph.php'); ?>
+
+<!-- Search Results -->
 <?php if($results): ?>
 
     <section id="elasticsearch-sidebar">
