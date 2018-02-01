@@ -96,11 +96,4 @@ class Elasticsearch_Integration_SimplePages extends Elasticsearch_Integration_Ba
             Elasticsearch_Document::bulkIndex($docs);
         }
     }
-
-    /**
-     * Deletes all items from the index.
-     */
-    public function deleteAll() {
-        $this->_deleteByQueryModel('SimplePagesPage');
-    }
 }

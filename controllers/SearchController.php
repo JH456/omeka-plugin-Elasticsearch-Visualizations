@@ -12,6 +12,7 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
         $limit = isset($limit) ? $limit : 20;
         $page = $this->_request->page ? $this->_request->page : 1;
         $start = ($page - 1) * $limit;
+        $user = $this->getCurrentUser();
         $query = $this->_getSearchParams();
         $sort = $this->_getSortParams();
 
@@ -20,10 +21,12 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
         try {
             $results = Elasticsearch_Helper_Index::search([
                 'query'             => $query,
-                'sort'              => $sort,
                 'offset'            => $start,
                 'limit'             => $limit,
+                'sort'              => $sort,
+                'showNotPublic'     => $user && is_allowed('Items', 'showNotPublic')
             ]);
+
             Zend_Registry::set('pagination', [
                 'per_page' => $limit,
                 'page' => $page,

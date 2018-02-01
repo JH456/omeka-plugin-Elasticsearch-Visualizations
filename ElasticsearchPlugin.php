@@ -34,7 +34,7 @@ class ElasticsearchPlugin extends Omeka_Plugin_AbstractPlugin {
         if(!$docIndex) {
             $docIndex = Elasticsearch_Config::index();
         }
-        $this->integrationMgr->setIndex($docIndex)->integrate();
+        $this->integrationMgr->setIndex($docIndex)->applyHooksAndFilters();
     }
 
     public function hookInstall() {

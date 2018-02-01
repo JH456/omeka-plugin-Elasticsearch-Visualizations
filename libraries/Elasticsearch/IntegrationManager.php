@@ -50,10 +50,10 @@ class Elasticsearch_IntegrationManager {
     }
 
     /**
-     * Invokes the integrate() method in each integration.
+     * Invokes the applyHooksAndFilters() method in each integration.
      */
-    public function integrate() {
-        $this->_perform('integrate');
+    public function applyHooksAndFilters() {
+        $this->_perform('applyHooksAndFilters');
     }
 
     /**
@@ -64,34 +64,20 @@ class Elasticsearch_IntegrationManager {
     }
 
     /**
-     * Factory function to create an instance of this class.
-     *
-     * @param $docIndex
-     * @return Elasticsearch_IntegrationManager
-     */
-    public static function create($docIndex) {
-        $mgr = new Elasticsearch_IntegrationManager();
-        $mgr->setIndex($docIndex);
-        return $mgr;
-    }
-
-    /**
      * Delegates a method to each integration class.
      *
      * @param $method
      */
     protected function _perform($method) {
         _log("_perform($method)");
-        $results = [];
         foreach(self::$_integrations as $integrationClass) {
             if(class_exists($integrationClass)) {
                 $integration = new $integrationClass($this->_docIndex);
-                $results[] = $integration->$method();
+                $integration->$method();
             } else {
                 _log("Integration class $integrationClass does not exist!", Zend_Log::WARN);
             }
         }
-        return $results;
     }
 
     /**

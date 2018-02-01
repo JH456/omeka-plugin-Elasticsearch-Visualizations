@@ -267,14 +267,6 @@ class Elasticsearch_Integration_Neatline extends Elasticsearch_Integration_BaseI
     }
 
     /**
-     * Deletes all items from the index.
-     */
-    public function deleteAll() {
-        $this->_deleteByQueryModel('NeatlineRecord');
-        $this->_deleteByQueryModel('NeatlineExhibit');
-    }
-
-    /**
      * Retrieve records for a neatline exhibit.
      *
      * @return array

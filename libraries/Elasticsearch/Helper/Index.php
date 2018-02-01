@@ -6,6 +6,21 @@
 class Elasticsearch_Helper_Index {
 
     /**
+     * Indexes all items and integrated addons such as exhibits and simple pages.
+     *
+     * @return void
+     */
+    public static function indexAll() {
+        try {
+            $docIndex = self::docIndex();
+            $integrationMgr = new Elasticsearch_IntegrationManager();
+            $integrationMgr->setIndex($docIndex)->indexAll();
+        } catch(Exception $e) {
+            _log($e, Zend_Log::ERR);
+        }
+    }
+
+    /**
      * Creates an index.
      *
      * Use this to initialize mappings and other settings on the index.
@@ -16,7 +31,7 @@ class Elasticsearch_Helper_Index {
         $params = [
             'index' => self::docIndex(),
             'body' => [
-                'settings' => new stdClass(), // emtpy settings object
+                'settings' => [],
                 'mappings' => self::getMappings()
             ]
         ];
@@ -24,37 +39,18 @@ class Elasticsearch_Helper_Index {
     }
 
     /**
-     * Deletes the elasticsearch index and all documents in it.
+     * Deletes all items in the elasticsearch index.
      *
      * Assumes that index auto-creation is enabled so that when items are re-indexed,
      * the index will be created automatically.
      */
-    public static function deleteIndex() {
+    public static function deleteAll() {
         $params = ['index' => self::docIndex()];
         if(self::client(['nobody' => true])->indices()->exists($params)) {
             self::client()->indices()->delete($params);
         }
     }
 
-    /**
-     * Indexes all items and integrated addons.
-     *
-     * @return void
-     */
-    public static function indexAll() {
-        $docIndex = self::docIndex();
-        Elasticsearch_IntegrationManager::create($docIndex)->indexAll();
-    }
-
-    /**
-     * Deletes all items from the index.
-     *
-     * @return void
-     */
-    public static function deleteAll() {
-        $docIndex = self::docIndex();
-        Elasticsearch_IntegrationManager::create($docIndex)->deleteAll();
-    }
 
     /**
      * Pings the elasticsearch server to see if it is available or not.
@@ -111,7 +107,6 @@ class Elasticsearch_Helper_Index {
     public static function getMappings() {
         $mappings = [
             'doc' => [
-                'dynamic' => false,
                 'properties' => [
                     // Common Mappings
                     'resulttype'  => ['type' => 'keyword'],
@@ -129,30 +124,14 @@ class Elasticsearch_Helper_Index {
                     'url'         => ['type' => 'keyword'],
 
                     // Item-Specific
-                    'collection' => [
-                        'type' => 'text',
-                        'fields' => ['keyword' => ['type' => 'keyword']]
-                    ],
+                    'collection' => ['type' => 'text'],
                     'itemtype'   => ['type' => 'keyword'],
-                    'elements'   => [
-                        'type' => 'object',
-                        'properties' => [
-                            'displayName' => ['type' => 'keyword', 'index' => false],
-                            'name'        => ['type' => 'keyword', 'index' => false]
-                        ]
-                    ],
-                    'element'    => [
-                        'type' => 'object',
-                        'dynamic' => true,
-                        'properties' => new stdClass()
-                    ],
+                    'elements'   => ['type' => 'keyword', 'index' => false],
+                    'element'    => ['type' => 'object'],
 
                     // Exhibit-Specific
                     'credits' => ['type' => 'text'],
-                    'exhibit' => [
-                        'type' => 'text',
-                        'fields' => ['keyword' => ['type' => 'keyword']]
-                    ],
+                    'exhibit' => ['type' => 'text'],
                     'blocks' => [
                         'type' => 'nested',
                         'properties' => [
@@ -163,7 +142,7 @@ class Elasticsearch_Helper_Index {
 
                     // Neatline-Specific
                     'neatline'        => ['type' => 'text'],
-                    'neatlineRecords' => ['type' => 'integer', 'index' => false]
+                    'neatlineRecords' => ['type' => 'keyword', 'index' => false]
                 ]
             ]
         ];
@@ -179,12 +158,32 @@ class Elasticsearch_Helper_Index {
         $aggregations = [
             'resulttype' => [
                 'terms' => [
-                    'field' => 'resulttype'
+                    'field' => 'resulttype.keyword',
+                    'size' => 10
                 ]
             ],
             'itemtype' => [
                 'terms' => [
-                    'field' => 'itemtype'
+                    'field' => 'itemtype.keyword',
+                    'size' => 10
+                ]
+            ],
+            'tags' => [
+                'terms' => [
+                    'field' => 'tags.keyword',
+                    'size' => 15
+                ]
+            ],
+            'collection' => [
+                'terms' => [
+                    'field' => 'collection.keyword',
+                    'size' => 10
+                ]
+            ],
+            'exhibit' => [
+                'terms' => [
+                    'field' => 'tags',
+                    'size' => 1000
                 ]
             ],
             'featured' => [
@@ -195,22 +194,6 @@ class Elasticsearch_Helper_Index {
             'public' => [
                 'terms' => [
                     'field' => 'public',
-                ]
-            ],
-            'tags' => [
-                'terms' => [
-                    'field' => 'tags',
-                    'size' => 1000
-                ]
-            ],
-            'collection' => [
-                'terms' => [
-                    'field' => 'collection.keyword',
-                ]
-            ],
-            'exhibit' => [
-                'terms' => [
-                    'field' => 'exhibit.keyword'
                 ]
             ]
         ];
@@ -254,10 +237,10 @@ class Elasticsearch_Helper_Index {
             $filters[] = ['term' => ['exhibit.keyword' => $facets['exhibit']]];
         }
         if(isset($facets['itemtype'])) {
-            $filters[] = ['term' => ['itemtype' => $facets['itemtype']]];
+            $filters[] = ['term' => ['itemtype.keyword' => $facets['itemtype']]];
         }
         if(isset($facets['resulttype'])) {
-            $filters[] = ['term' => ['resulttype' => $facets['resulttype']]];
+            $filters[] = ['term' => ['resulttype.keyword' => $facets['resulttype']]];
         }
         if(isset($facets['featured'])) {
             $filters[] = ['term' => ['featured' => $facets['featured']]];
@@ -278,6 +261,7 @@ class Elasticsearch_Helper_Index {
         }
         $offset = isset($options['offset']) ? $options['offset'] : 0;
         $limit = isset($options['limit']) ? $options['limit'] : 20;
+        $showNotPublic = isset($options['showNotPublic']) ? $options['showNotPublic'] : false;
         $terms = isset($options['query']['q']) ? $options['query']['q'] : '';
         $facets = isset($options['query']['facets']) ? $options['query']['facets'] : [];
         $sort = isset($options['sort']) ? $options['sort'] : null;
@@ -302,10 +286,8 @@ class Elasticsearch_Helper_Index {
         $body['query']['bool']['must'] = $must_query;
 
         // Add filters
-        $acl = Zend_Registry::get('bootstrap')->getResource('Acl');
-        $showNotPublic = $acl->isAllowed(current_user(), 'Search', 'showNotPublic');
         $filters = self::getFacetFilters($facets);
-        if (!$showNotPublic) {
+        if(!$showNotPublic) {
             $filters[] = ['term' => ['public' => true]];
         }
         if(count($filters) > 0) {
@@ -327,8 +309,7 @@ class Elasticsearch_Helper_Index {
             'size' => $limit,
             'body' => $body
         ];
-
-        _log("elasticsearch search params:\n".json_encode($params,JSON_PRETTY_PRINT), Zend_Log::DEBUG);
+        _log("elasticsearch search params: ".var_export($params,1), Zend_Log::DEBUG);
 
         return self::client()->search($params);
     }

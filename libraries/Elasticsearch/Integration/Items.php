@@ -94,6 +94,7 @@ class Elasticsearch_Integration_Items extends Elasticsearch_Integration_BaseInte
             $this->_log("Error loading elements for item {$item->id}. Error: ".$e->getMessage(), Zend_Log::WARN);
         }
 
+
         // tags:
         $tags = [];
         foreach ($item->getTags() as $tag) {
@@ -128,12 +129,5 @@ class Elasticsearch_Integration_Items extends Elasticsearch_Integration_BaseInte
             $this->_log('indexAll items: '.count($docs));
             Elasticsearch_Document::bulkIndex($docs);
         }
-    }
-
-    /**
-     * Deletes all items from the index.
-     */
-    public function deleteAll() {
-        $this->_deleteByQueryModel('Item');
     }
 }
