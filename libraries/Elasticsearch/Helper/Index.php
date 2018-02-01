@@ -134,7 +134,6 @@ class Elasticsearch_Helper_Index {
                         'fields' => ['keyword' => ['type' => 'keyword']]
                     ],
                     'itemtype'   => ['type' => 'keyword'],
-                    'element'    => ['type' => 'object', 'dynamic' => true, 'properties' => new stdClass()],
                     'elements'   => [
                         'type' => 'object',
                         'properties' => [
@@ -142,13 +141,10 @@ class Elasticsearch_Helper_Index {
                             'name'        => ['type' => 'keyword', 'index' => false]
                         ]
                     ],
-                    'files' => [
-                        'type' => 'nested',
-                        'properties' => [
-                            'id'      => ['type' => 'integer', 'index' => false],
-                            'title'   => ['type' => 'keyword'],
-                            'element' => ['type' => 'object', 'dynamic' => true, 'properties' => new stdClass()]
-                        ]
+                    'element'    => [
+                        'type' => 'object',
+                        'dynamic' => true,
+                        'properties' => new stdClass()
                     ],
 
                     // Exhibit-Specific
