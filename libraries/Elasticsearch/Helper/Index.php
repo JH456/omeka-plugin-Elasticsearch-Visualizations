@@ -203,7 +203,8 @@ class Elasticsearch_Helper_Index {
             ],
             'tags' => [
                 'terms' => [
-                    'field' => 'tags'
+                    'field' => 'tags',
+                    'size' => 1000
                 ]
             ],
             'collection' => [
