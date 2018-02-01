@@ -171,7 +171,7 @@ class Elasticsearch_Helper_Index {
             'tags' => [
                 'terms' => [
                     'field' => 'tags.keyword',
-                    'size' => 15
+                    'size' => 1000
                 ]
             ],
             'collection' => [
@@ -182,8 +182,8 @@ class Elasticsearch_Helper_Index {
             ],
             'exhibit' => [
                 'terms' => [
-                    'field' => 'tags',
-                    'size' => 1000
+                    'field' => 'exhibit.keyword',
+                    'size' => 10
                 ]
             ],
             'featured' => [
