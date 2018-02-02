@@ -3,6 +3,6 @@
 <script>
     graphVisualization.renderGraphOnSVG({
         svgID: 'connections-graph',
-        data: <?php echo file_get_contents('/var/www/html/plugins/Elasticsearch/views/public/resources/miserables.json'); ?>
+        data: <?php echo $graphData; ?>
     });
 </script>

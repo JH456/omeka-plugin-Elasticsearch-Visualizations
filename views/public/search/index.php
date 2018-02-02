@@ -44,7 +44,7 @@
 
 <!-- Search Results -->
 <?php if($results): ?>
-    <section class='w3-col l2' style="overflow:scroll; max-height:60vh;">
+    <section class='w3-col l2' style="overflow:scroll; max-height:684px;">
         <?php
         echo $this->partial('search/partials/aggregations.php', array(
                 'query'        => $query,
@@ -53,7 +53,7 @@
         ?>
     </section>
 
-    <section class='w3-col l4' style="overflow:scroll; max-height:60vh;" >
+    <section class='w3-col l4' style="overflow:scroll; max-height:684px;" >
         <?php if(count($results['hits']['hits']) > 0): ?>
             <?php foreach($results['hits']['hits'] as $hit): ?>
                 <?php echo $this->partial('search/partials/hit.php', array('hit' => $hit)); ?>
@@ -67,7 +67,7 @@
 
     <section class='w3-col l6'>
         <h3> Graph View </h3>
-        <?php echo $this->partial('search/partials/graph.php'); ?>
+        <?php echo $this->partial('search/partials/graph.php', array('graphData' => $graphData)); ?>
     </section>
 
 

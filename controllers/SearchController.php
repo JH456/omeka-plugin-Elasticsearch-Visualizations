@@ -36,8 +36,52 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
             error_log($e->getMessage());
         }
 
+        $graphData = $this->_generateGraphData($results);
+
         $this->view->assign('query', $query);
         $this->view->assign('results', $results);
+        $this->view->assign('graphData', $graphData);
+    }
+
+    private function _generateGraphData($results) {
+        if (!$results) {
+            return null;
+        } else {
+            $hits = $results['hits']['hits'];
+            $tagsToDocuments = array();
+            $nodes = array();
+            foreach($hits as $hit):
+                $hitName = $hit['_source']['title'];
+                $nodes[] = array(
+                    "id" => $hitName,
+                    "group" => 1
+                );
+                $tags = $hit['_source']['tags'];
+                foreach($tags as $tagName):
+                    if (!isset($tagsToDocuments[$tagName])) {
+                        $tagsToDocuments[$tagName] = array($hitName);
+                    } else {
+                        $tagsToDocuments[$tagName][] = $hitName;
+                    }
+                endforeach;
+            endforeach;
+            $links = array();
+            foreach($tagsToDocuments as $tagName => $documentsWithTag) {
+                if (strpos($tagName, 'older') !== FALSE) {
+                    for ($i = 0; $i < count($documentsWithTag); $i++) {
+                        for ($j = $i + 1; $j < count($documentsWithTag); $j++) {
+                            $links[] = array(
+                                "source" => $documentsWithTag[$i],
+                                "target" => $documentsWithTag[$j],
+                                "value" => 1
+                            );
+                        }
+                    }
+                }
+            }
+            $graphData = array("nodes" => $nodes, "links" => $links);
+            return json_encode($graphData);
+        }
     }
 
     private function _getSearchParams() {
