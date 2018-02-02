@@ -9,12 +9,9 @@
 
 <?php echo head(array('title' => __('Elasticsearch')));?>
 
-<?php $totalResults = isset($results['hits']['total']) ? $results['hits']['total'].' '.__('results') : null; ?>
-<h1><?php echo __('Search') . " ($totalResults)"; ?></h1>
-
-<div id="elasticsearch-search">
+<customdiv id="elasticsearch-search">
     <form id="elasticsearch-search-form">
-        <input type="text" title="<?php echo __('Search keywords') ?>" name="q" value="<?php echo htmlspecialchars(array_key_exists('q', $_GET) ? $_GET['q'] : '', ENT_QUOTES); ?>" />
+        <input type="text" placeholder="Search" title="<?php echo __('Search keywords') ?>" name="q" value="<?php echo htmlspecialchars(array_key_exists('q', $_GET) ? $_GET['q'] : '', ENT_QUOTES); ?>" />
         <?php foreach($query['facets'] as $facet_name => $facet_values): ?>
             <?php if(is_array($facet_values)): ?>
                 <?php foreach($facet_values as $facet_value): ?>
@@ -28,11 +25,14 @@
         <br>
         <a href="javascript:void(0);" id="elasticsearch-help-btn" style="display:block;clear:both;"><?php echo __("Search Help"); ?></a>
     </form>
-</div>
+</customdiv>
 
-<div id="elasticsearch-help" style="display:none;">
+<div id="elasticsearch-help"  style="display:none;">
     <?php echo $this->partial('search/partials/help.php'); ?>
 </div>
+
+<?php $totalResults = isset($results['hits']['total']) ? $results['hits']['total'].' '.__('results') : null; ?>
+<h6><?php echo __('Search') . " ($totalResults)"; ?></h6>
 
 <!-- RESULTS -->
 <?php
@@ -44,8 +44,7 @@
 
 <!-- Search Results -->
 <?php if($results): ?>
-
-    <section class='w3-col l2'>
+    <section class='w3-col l2' style="overflow:scroll; max-height:60vh;">
         <?php
         echo $this->partial('search/partials/aggregations.php', array(
                 'query'        => $query,
@@ -54,7 +53,7 @@
         ?>
     </section>
 
-    <section class='w3-col l5'>
+    <section class='w3-col l4' style="overflow:scroll; max-height:60vh;" >
         <?php if(count($results['hits']['hits']) > 0): ?>
             <?php foreach($results['hits']['hits'] as $hit): ?>
                 <?php echo $this->partial('search/partials/hit.php', array('hit' => $hit)); ?>
@@ -66,10 +65,11 @@
         <?php echo pagination_links(); ?>
     </section>
 
-    <section class='w3-col l5'>
+    <section class='w3-col l6'>
         <h3> Graph View </h3>
         <?php echo $this->partial('search/partials/graph.php'); ?>
     </section>
+
 
 <?php else: ?>
     <section>
