@@ -1,4 +1,5 @@
 <?php queue_css_file('elasticsearch-results'); ?>
+<?php queue_css_url('https://www.w3schools.com/w3css/4/w3.css'); ?>
 <?php queue_js_file('elasticsearch'); ?>
 <?php queue_js_string('ElasticsearchPlugin.setupSearchResults();'); ?>
 
@@ -40,12 +41,11 @@
 
 <!-- Temporary Graph -->
 
-<?php echo $this->partial('search/partials/graph.php'); ?>
 
 <!-- Search Results -->
 <?php if($results): ?>
 
-    <section id="elasticsearch-sidebar">
+    <section class='w3-col l2'>
         <?php
         echo $this->partial('search/partials/aggregations.php', array(
                 'query'        => $query,
@@ -54,7 +54,7 @@
         ?>
     </section>
 
-    <section id="elasticsearch-results">
+    <section class='w3-col l5'>
         <?php if(count($results['hits']['hits']) > 0): ?>
             <?php foreach($results['hits']['hits'] as $hit): ?>
                 <?php echo $this->partial('search/partials/hit.php', array('hit' => $hit)); ?>
@@ -64,6 +64,11 @@
         <?php endif; ?>
 
         <?php echo pagination_links(); ?>
+    </section>
+
+    <section class='w3-col l5'>
+        <h3> Graph View </h3>
+        <?php echo $this->partial('search/partials/graph.php'); ?>
     </section>
 
 <?php else: ?>
