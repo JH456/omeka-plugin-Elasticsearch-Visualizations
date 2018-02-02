@@ -1,4 +1,4 @@
-<svg id='connections-graph' width="960" height="600"></svg>
+<svg id='connections-graph' width='780' height='600'></svg>
 
 <script>
     graphVisualization.renderGraphOnSVG({
