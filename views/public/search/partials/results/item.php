@@ -19,7 +19,14 @@
     <?php $elementNames = $hit['_source']['elements']; ?>
     <?php foreach($elementNames as $elementName): ?>
         <?php if(isset($elementText[$elementName['name']])): ?>
-            <li title="element.<?php echo $elementName['name']; ?>"><b><?php echo $elementName['displayName']; ?>:</b> <?php echo $elementText[$elementName['name']]; ?></li>
+            <li title="element.<?php echo $elementName['name']; ?>">
+                <b><?php echo $elementName['displayName']; ?>:</b> 
+		<?php 
+                    $text = $elementText[$elementName['name']];
+                    $truncated = Elasticsearch_Utils::truncateText($text, $maxTextLength);
+                ?>
+                <pre><?php echo $truncated?><pre>
+            </li>
         <?php endif; ?>
     <?php endforeach; ?>
 <?php endif; ?>

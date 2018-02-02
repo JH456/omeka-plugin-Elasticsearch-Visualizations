@@ -131,7 +131,7 @@ class Elasticsearch_Utils {
      */
     public static function truncateText($text, $length, $ellipsis=true) {
         $truncated = substr($text, 0, $length);
-        if($ellipsis && strlen($truncated) > $length) {
+        if($ellipsis && strlen($text) > $length) {
             return "$truncated...";
         }
         return $truncated;
