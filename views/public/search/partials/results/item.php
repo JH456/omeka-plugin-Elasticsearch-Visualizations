@@ -4,28 +4,35 @@
 <?php endif; ?>
 
 <ul>
-    <li title="resulttype"><b>Result Type:</b> <?php echo $hit['_source']['resulttype']; ?></li>
+    <!--<li title="resulttype"><b>Result Type:</b> <?php echo $hit['_source']['resulttype']; ?></li>-->
 
-<?php if(isset($hit['_source']['itemtype'])): ?>
+<!--<?php if(isset($hit['_source']['itemtype'])): ?>
     <li title="itemtype"><b>Item Type:</b> <?php echo $hit['_source']['itemtype']; ?></li>
-<?php endif; ?>
+<?php endif; ?>-->
 
-<?php if(isset($hit['_source']['collection'])): ?>
+<!--<?php if(isset($hit['_source']['collection'])): ?>
     <li title="collection"><b>Collection:</b> <?php echo $hit['_source']['collection']; ?></li>
-<?php endif; ?>
+<?php endif; ?>-->
 
 <?php if(isset($hit['_source']['elements']) && isset($hit['_source']['element'])): ?>
     <?php $elementText = $hit['_source']['element']; ?>
     <?php $elementNames = $hit['_source']['elements']; ?>
     <?php foreach($elementNames as $elementName): ?>
-        <?php if(isset($elementText[$elementName['name']])): ?>
+        <?php if(isset($elementText[$elementName['name']]) && $elementName['name'] == "text"): ?>
             <li title="element.<?php echo $elementName['name']; ?>">
-                <b><?php echo $elementName['displayName']; ?>:</b> 
+                <b><?php echo $elementName['displayName']; ?>:</b>
 		<?php 
                     $text = $elementText[$elementName['name']];
-                    $truncated = Elasticsearch_Utils::truncateText($text, $maxTextLength);
+                    $text = str_replace("\n", " ", $text);
+                    $textLength = sizeof($text);
+                    if ($textLength > $maxTextLength) {
+                        $truncated = $text;
+                    } else {
+                        $truncated = wordwrap($text, $maxTextLength);
+                        $truncated = explode("\n", $truncated)[0]."...";
+                    }
                 ?>
-                <pre><?php echo $truncated?><pre>
+                <?php echo $truncated?>
             </li>
         <?php endif; ?>
     <?php endforeach; ?>

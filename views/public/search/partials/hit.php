@@ -15,7 +15,7 @@
             'hit' => $hit,
             'record' => $record,
             'record_url' => $record_url,
-            'maxTextLength' => 1000
+            'maxTextLength' => 280
         ));
     } catch(Zend_View_Exception $e) {
         echo "<!-- missing template $model_template -->";
