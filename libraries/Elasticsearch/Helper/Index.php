@@ -265,12 +265,33 @@ class Elasticsearch_Helper_Index {
         $terms = isset($options['query']['q']) ? $options['query']['q'] : '';
         $facets = isset($options['query']['facets']) ? $options['query']['facets'] : [];
         $sort = isset($options['sort']) ? $options['sort'] : null;
+        $highlight = isset($options['highlight']) ? $options['highlight'] : false;
 
         // Main body of query
         $body = [
             'query' => ['bool' => []],
             'aggregations' => self::getAggregations()
         ];
+
+        $maxFragments = 2;
+        $maxFragmentLength = 200;
+
+        if ($highlight) {
+            $body['highlight'] = [
+                'fields' => [
+                    'element.text' => [
+                        'type' => 'unified',
+                        'fragment_size' => $maxFragmentLength,
+                        'number_of_fragments' => $maxFragments
+                    ],
+                    'description' => [
+                        'type' => 'unified',
+                        'fragment_size' => $maxFragmentLength,
+                        'number_of_fragments' => 0 // Do not fragment
+                    ]
+                ]
+            ];
+        }
 
         // Add must query
         if(empty($terms)) {

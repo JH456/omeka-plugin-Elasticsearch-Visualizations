@@ -14,7 +14,14 @@
     <li title="collection"><b>Collection:</b> <?php echo $hit['_source']['collection']; ?></li>
 <?php endif; ?>-->
 
-<?php if(isset($hit['_source']['elements']) && isset($hit['_source']['element'])): ?>
+<?php if(isset($hit['highlight']) && isset($hit['highlight']['element.text'])): ?>
+    <b>Text: </b>
+    <?php
+    foreach($hit['highlight']['element.text'] as $highlightFragment) {
+        echo $highlightFragment . ' ...';
+    }
+    ?>
+<?php elseif(isset($hit['_source']['elements']) && isset($hit['_source']['element'])): ?>
     <?php $elementText = $hit['_source']['element']; ?>
     <?php $elementNames = $hit['_source']['elements']; ?>
     <?php foreach($elementNames as $elementName): ?>

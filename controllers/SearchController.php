@@ -15,6 +15,7 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
         $user = $this->getCurrentUser();
         $query = $this->_getSearchParams();
         $sort = $this->_getSortParams();
+        $highlight = true;
 
         // execute query
         $results = null;
@@ -24,7 +25,8 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
                 'offset'            => $start,
                 'limit'             => $limit,
                 'sort'              => $sort,
-                'showNotPublic'     => $user && is_allowed('Items', 'showNotPublic')
+                'showNotPublic'     => $user && is_allowed('Items', 'showNotPublic'),
+                'highlight'         => $highlight
             ]);
 
             Zend_Registry::set('pagination', [
