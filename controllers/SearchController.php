@@ -58,14 +58,17 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
                     "id" => $hitName,
                     "group" => 1
                 );
-                $tags = $hit['_source']['tags'];
-                foreach($tags as $tagName):
-                    if (!isset($tagsToDocuments[$tagName])) {
-                        $tagsToDocuments[$tagName] = array($hitName);
-                    } else {
-                        $tagsToDocuments[$tagName][] = $hitName;
-                    }
-                endforeach;
+                $documentHasTags = isset($hit['_source']['tags']);
+                if ($documentHasTags) {
+                    $tags = $hit['_source']['tags'];
+                    foreach($tags as $tagName):
+                        if (!isset($tagsToDocuments[$tagName])) {
+                            $tagsToDocuments[$tagName] = array($hitName);
+                        } else {
+                            $tagsToDocuments[$tagName][] = $hitName;
+                        }
+                    endforeach;
+                }
             endforeach;
             $links = array();
             foreach($tagsToDocuments as $tagName => $documentsWithTag) {
