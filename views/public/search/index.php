@@ -4,10 +4,11 @@
 <?php queue_js_string('ElasticsearchPlugin.setupSearchResults();'); ?>
 
 <?php queue_css_file('graphStyle'); ?>
+<?php queue_css_file('fix-w3'); ?>
 <?php queue_js_url('https://d3js.org/d3.v4.min.js'); ?>
 <?php queue_js_file('graphVisualization'); ?>
 
-<?php echo head(array('title' => __('Elasticsearch')));?>
+<?php echo head(array('title' => __('Elasticsearch'), 'bodyclass' => 'w3Page'));?>
 
 <customdiv id="elasticsearch-search">
     <form id="elasticsearch-search-form">
