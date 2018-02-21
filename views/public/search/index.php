@@ -8,13 +8,12 @@
 <?php queue_css_file('fix-w3'); ?>
 <?php queue_js_url('https://d3js.org/d3.v4.min.js'); ?>
 <?php queue_js_file('graphVisualization'); ?>
-<?php queue_js_file('searchBarFunctions'); ?>
 
 <?php echo head(array('title' => __('Elasticsearch'), 'bodyclass' => 'w3Page'));?>
 
 
 <div>
-    <?php echo $this->partial('search/partials/searchBar.php', array('query' => $query)); ?>
+    <?php echo $this->partial('search/partials/searchbar.php', array('query' => $query)); ?>
 </div>
 
 <div id="elasticsearch-help"  style="display:none;">
