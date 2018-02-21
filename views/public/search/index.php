@@ -1,5 +1,6 @@
 <?php queue_css_file('elasticsearch-results'); ?>
 <?php queue_css_url('https://www.w3schools.com/w3css/4/w3.css'); ?>
+<?php queue_css_url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'); ?>
 <?php queue_js_file('elasticsearch'); ?>
 <?php queue_js_string('ElasticsearchPlugin.setupSearchResults();'); ?>
 
@@ -7,30 +8,19 @@
 <?php queue_css_file('fix-w3'); ?>
 <?php queue_js_url('https://d3js.org/d3.v4.min.js'); ?>
 <?php queue_js_file('graphVisualization'); ?>
+<?php queue_js_file('searchBarFunctions'); ?>
 
 <?php echo head(array('title' => __('Elasticsearch'), 'bodyclass' => 'w3Page'));?>
 
-<customdiv id="elasticsearch-search">
-    <form id="elasticsearch-search-form">
-        <input type="text" placeholder="Search" title="<?php echo __('Search keywords') ?>" name="q" value="<?php echo htmlspecialchars(array_key_exists('q', $_GET) ? $_GET['q'] : '', ENT_QUOTES); ?>" />
-        <?php foreach($query['facets'] as $facet_name => $facet_values): ?>
-            <?php if(is_array($facet_values)): ?>
-                <?php foreach($facet_values as $facet_value): ?>
-                    <input type="hidden" name="<?php echo "facet_{$facet_name}[]"; ?>" value="<?php echo $facet_value; ?>">
-                <?php endforeach; ?>
-            <?php else: ?>
-                <input type="hidden" name="<?php echo "facet_{$facet_name}"; ?>" value="<?php echo $facet_values; ?>">
-            <?php endif; ?>
-        <?php endforeach; ?>
-        <input type="submit" value="Search" />
-        <br>
-        <a href="javascript:void(0);" id="elasticsearch-help-btn" style="display:block;clear:both;"><?php echo __("Search Help"); ?></a>
-    </form>
-</customdiv>
+
+<div>
+    <?php echo $this->partial('search/partials/searchBar.php', array('query' => $query)); ?>
+</div>
 
 <div id="elasticsearch-help"  style="display:none;">
     <?php echo $this->partial('search/partials/help.php'); ?>
 </div>
+
 
 <?php $totalResults = isset($results['hits']['total']) ? $results['hits']['total'].' '.__('results') : null; ?>
 <h6><?php echo __('Search') . " ($totalResults)"; ?></h6>
