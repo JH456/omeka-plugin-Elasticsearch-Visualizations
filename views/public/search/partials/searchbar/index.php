@@ -40,7 +40,7 @@
       $query = array(
           'facets' => []
       );
-      include '../searchBar.php';
+      include '../searchbar.php';
       ?>
       
     </div>
