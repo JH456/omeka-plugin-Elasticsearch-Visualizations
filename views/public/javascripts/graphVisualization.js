@@ -62,7 +62,7 @@ let graphVisualization = (function() {
             .selectAll("circle")
             .data(graph.nodes)
             .enter().append("circle")
-            .attr("r", 2)
+            .attr("r", 4)
             .attr("fill", function(d) { return color(d.group); })
             .call(d3.drag()
                 .on("start", dragStarted)
@@ -70,7 +70,7 @@ let graphVisualization = (function() {
                 .on("end", dragEnded));
 
         node.append("title")
-            .text(function(d) { return d.id; });
+            .text(function(d) { return d.name; });
         return node
     }
 

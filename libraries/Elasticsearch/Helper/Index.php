@@ -266,6 +266,7 @@ class Elasticsearch_Helper_Index {
         $facets = isset($options['query']['facets']) ? $options['query']['facets'] : [];
         $sort = isset($options['sort']) ? $options['sort'] : null;
         $highlight = isset($options['highlight']) ? $options['highlight'] : false;
+        $source= isset($options['_source']) ? $options['_source'] : null;
 
         // Main body of query
         $body = [
@@ -291,6 +292,10 @@ class Elasticsearch_Helper_Index {
                     ]
                 ]
             ];
+        }
+
+        if ($source) {
+            $body['_source'] = $source;
         }
 
         // Add must query

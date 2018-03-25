@@ -2,7 +2,7 @@
 
 <script>
     graphVisualization.renderGraphOnSVG({
-        svgID: 'connections-graph',
-        data: <?php echo $graphData; ?>
+      svgID: 'connections-graph',
+      data: <?php echo $graphData; ?>
     });
 </script>
