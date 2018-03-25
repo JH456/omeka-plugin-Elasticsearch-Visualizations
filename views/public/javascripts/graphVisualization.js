@@ -6,6 +6,7 @@ let graphVisualization = (function() {
     function renderGraphOnSVG(paramsObject) {
         let svgID = paramsObject.svgID
         let graph = paramsObject.data
+        let svgBackgroundID = "svg-background"
 
         let svg = d3.select("#" + svgID)
         let width = +svg.attr('width')
@@ -18,28 +19,14 @@ let graphVisualization = (function() {
             .force("charge", d3.forceManyBody())
             .force("center", d3.forceCenter(width / 2, height / 2));
 
+        let container = svg.append('g')
+        let zoom = setupZoom(container)
 
-        let link = svg.append("g")
-            .attr("class", "links")
-            .selectAll("line")
-            .data(graph.links)
-            .enter().append("line")
-            .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
+        svg.call(zoom)
 
-        let node = svg.append("g")
-            .attr("class", "nodes")
-            .selectAll("circle")
-            .data(graph.nodes)
-            .enter().append("circle")
-            .attr("r", 5)
-            .attr("fill", function(d) { return color(d.group); })
-            .call(d3.drag()
-            .on("start", dragStarted)
-            .on("drag", dragged)
-            .on("end", dragEnded));
+        let link = setupLinkBehavior(container, graph, color)
 
-        node.append("title")
-            .text(function(d) { return d.id; });
+        let node = setupNodeBehavior(container, graph, color)
 
         simulation
             .nodes(graph.nodes)
@@ -59,6 +46,42 @@ let graphVisualization = (function() {
                 .attr("cx", function(d) { return d.x; })
                 .attr("cy", function(d) { return d.y; });
         }
+    }
+
+    function setupZoom(svg) {
+        let zoom = d3.zoom()
+            .on("zoom", () => {
+                svg.attr("transform", d3.event.transform);
+            })
+        return zoom
+    }
+
+    function setupNodeBehavior(svg, graph, color) {
+        let node = svg.append("g")
+            .attr("class", "nodes")
+            .selectAll("circle")
+            .data(graph.nodes)
+            .enter().append("circle")
+            .attr("r", 2)
+            .attr("fill", function(d) { return color(d.group); })
+            .call(d3.drag()
+                .on("start", dragStarted)
+                .on("drag", dragged)
+                .on("end", dragEnded));
+
+        node.append("title")
+            .text(function(d) { return d.id; });
+        return node
+    }
+
+    function setupLinkBehavior(svg, graph) {
+        let link = svg.append("g")
+            .attr("class", "links")
+            .selectAll("line")
+            .data(graph.links)
+            .enter().append("line")
+            .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
+        return link
     }
 
     function dragStarted(d) {
@@ -83,7 +106,7 @@ let graphVisualization = (function() {
     }
 
     return {
-        renderGraphOnSVG 
+        renderGraphOnSVG
     }
 }())
 
