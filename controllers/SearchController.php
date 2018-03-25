@@ -97,22 +97,25 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
                 }
                 $id++;
             endforeach;
+            $group = 2;
             foreach($tagsToDocuments as $tagName => $documentsWithTag) {
-                    $nodes[] = array(
-                        "id" => $tagName,
-                        "name" => $tagName,
-                        "group" => 2
+                $nodes[] = array(
+                    "id" => $tagName,
+                    "name" => $tagName,
+                    "group" => $group
+                );
+                for ($i = 0; $i < count($documentsWithTag); $i++) {
+                    $links[] = array(
+                        "source" => $documentsWithTag[$i],
+                        "target" => $tagName,
+                        "value" => 1,
+                        "group" => $group
                     );
-                    for ($i = 0; $i < count($documentsWithTag); $i++) {
-                        $links[] = array(
-                            "source" => $documentsWithTag[$i],
-                            "target" => $tagName,
-                            "value" => 1
-                        );
-                    }
+                }
+                $group++;
             }
         }
-        $graphData = array("nodes" => $nodes, "links" => $links);
+        $graphData = array("nodes" => $nodes, "links" => $links, "numGroups" => $group);
         return json_encode($graphData);
     }
 

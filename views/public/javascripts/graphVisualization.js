@@ -62,7 +62,7 @@ let graphVisualization = (function() {
             .selectAll("circle")
             .data(graph.nodes)
             .enter().append("circle")
-            .attr("r", 4)
+            .attr("r", function(d) {return d.group === 1 ? 4 : 8})
             .attr("fill", function(d) { return color(d.group); })
             .call(d3.drag()
                 .on("start", dragStarted)
@@ -74,12 +74,13 @@ let graphVisualization = (function() {
         return node
     }
 
-    function setupLinkBehavior(svg, graph) {
+    function setupLinkBehavior(svg, graph, color) {
         let link = svg.append("g")
             .attr("class", "links")
             .selectAll("line")
             .data(graph.links)
             .enter().append("line")
+            .attr("stroke", function(d) { return color(d.group); })
             .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
         return link
     }
