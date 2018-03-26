@@ -8,7 +8,32 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
     }
 
     public function indexAction() {
-        ini_set("max_execution_time", 0);
+        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+            $this->_indexGetAction();
+        } else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->_indexPostAction();
+        }
+    }
+
+    private function _indexPostAction() {
+        $query = $this->_getSearchParams();
+        $user = $this->getCurrentUser();
+        $totalResults = $this->_search(
+            [
+                'query'             => $query,
+                'limit'             => 1000,
+                'offset'            => $this->_request->graphData ? $this->_request->graphData : 0,
+                'showNotPublic'     => $user && is_allowed('Items', 'showNotPublic'),
+                '_source'           => [
+                    'include' => ['tags', 'title']
+                ]
+            ]
+        );
+        $graphData = $this->_generateGraphData($totalResults);
+        echo $graphData;
+    }
+
+    private function _indexGetAction() {
         $limit = get_option('per_page_public');
         $limit = isset($limit) ? $limit : 20;
         $page = $this->_request->page ? $this->_request->page : 1;
@@ -29,18 +54,6 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
                 'highlight'         => $highlight
             ]
         );
-        // $numResults = $pageResults['hits']['total'];
-
-        $totalResults = $this->_search(
-            [
-                'query'             => $query,
-                'limit'             => 5000,
-                'showNotPublic'     => $user && is_allowed('Items', 'showNotPublic'),
-                '_source'           => [
-                    'include' => ['tags', 'title']
-                ]
-            ]
-        );
 
         $paginationParams = [
             'per_page' => $limit,
@@ -52,11 +65,11 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
             Zend_Registry::set('pagination', $paginationParams);
         }
 
-        $graphData = $this->_generateGraphData($totalResults);
+        // $graphData = $this->_generateGraphData($totalResults);
 
         $this->view->assign('query', $query);
         $this->view->assign('results', $pageResults);
-        $this->view->assign('graphData', $graphData);
+        // $this->view->assign('graphData', $graphData);
     }
 
     private function _search($searchParams) {
@@ -73,15 +86,14 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
         ini_set('memory_limit', '256M');
         $nodes = array();
         $links = array();
+        $totalResults = $results['hits']['total'];
         if ($results) {
             $hits = $results['hits']['hits'];
             $tagsToDocuments = array();
-            $id = 0;
             foreach($hits as $hit):
                 $hitName = $hit['_source']['title'];
                 $nodes[] = array(
-                    "id" => $id,
-                    "name" => $hitName,
+                    "id" => $hitName,
                     "group" => 1
                 );
                 $documentHasTags = isset($hit['_source']['tags']);
@@ -89,16 +101,15 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
                     $tags = $hit['_source']['tags'];
                     foreach($tags as $tagName):
                         if (!isset($tagsToDocuments[$tagName])) {
-                            $tagsToDocuments[$tagName] = array($id);
+                            $tagsToDocuments[$tagName] = array($hitName);
                         } else {
-                            $tagsToDocuments[$tagName][] = $id;
+                            $tagsToDocuments[$tagName][] = $hitName;
                         }
                      endforeach;
                 }
-                $id++;
             endforeach;
-            $group = 2;
             foreach($tagsToDocuments as $tagName => $documentsWithTag) {
+                $group = base_convert(md5($tagName), 16, 10);
                 $nodes[] = array(
                     "id" => $tagName,
                     "name" => $tagName,
@@ -112,10 +123,9 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
                         "group" => $group
                     );
                 }
-                $group++;
             }
         }
-        $graphData = array("nodes" => $nodes, "links" => $links, "numGroups" => $group);
+        $graphData = array("nodes" => $nodes, "links" => $links, "totalResults" => $totalResults);
         return json_encode($graphData);
     }
 

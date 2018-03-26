@@ -70,7 +70,7 @@ let graphVisualization = (function() {
                 .on("end", dragEnded));
 
         node.append("title")
-            .text(function(d) { return d.name; });
+            .text(function(d) { return d.id; });
         return node
     }
 
