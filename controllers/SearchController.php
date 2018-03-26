@@ -18,10 +18,11 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
     private function _indexPostAction() {
         $query = $this->_getSearchParams();
         $user = $this->getCurrentUser();
+        $limit = 1000;
         $totalResults = $this->_search(
             [
                 'query'             => $query,
-                'limit'             => 1000,
+                'limit'             => $limit,
                 'offset'            => $this->_request->graphData ? $this->_request->graphData : 0,
                 'showNotPublic'     => $user && is_allowed('Items', 'showNotPublic'),
                 '_source'           => [
@@ -29,7 +30,7 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
                 ]
             ]
         );
-        $graphData = $this->_generateGraphData($totalResults);
+        $graphData = $this->_generateGraphData($totalResults, $limit);
         echo $graphData;
     }
 
@@ -82,7 +83,7 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
         return $results;
     }
 
-    private function _generateGraphData($results) {
+    private function _generateGraphData($results, $limit) {
         ini_set('memory_limit', '256M');
         $nodes = array();
         $links = array();
@@ -125,7 +126,7 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
                 }
             }
         }
-        $graphData = array("nodes" => $nodes, "links" => $links, "totalResults" => $totalResults);
+        $graphData = array("nodes" => $nodes, "links" => $links, "totalResults" => $totalResults, "limit" => $limit);
         return json_encode($graphData);
     }
 

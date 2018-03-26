@@ -64,6 +64,7 @@ let graphVisualization = (function() {
             .enter().append("circle")
             .attr("r", function(d) {return d.group === 1 ? 4 : 8})
             .attr("fill", function(d) { return color(d.group); })
+            .attr("stroke", function(d) { return color(d.group); })
             .call(d3.drag()
                 .on("start", dragStarted)
                 .on("drag", dragged)
