@@ -29,6 +29,12 @@
         <?php endforeach; ?>
         <input type="submit" value="Search" />
         <br>
-        <a href="javascript:void(0);" id="elasticsearch-help-btn" style="display:block;clear:both;"><?php echo __("Search Help"); ?></a>
+        <a href="javascript:void(0);" id="elasticsearch-help-btn" style="display:block;clear:both; 
+                                                                         color:white;
+                                                                         font-weight:bold;
+                                                                         padding:10px; 
+                                                                         padding-left: 20px;">
+            <?php echo __("Search Help"); ?>
+        </a>
     </form>
 </customdiv>

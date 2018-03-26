@@ -1,4 +1,4 @@
-<div class="elasticsearch-result">
+<div class="elasticsearch-result" style="padding: 0px 20px;">
     <?php
         //echo '<!--'.json_encode($hit, JSON_PRETTY_PRINT).'-->'; }
     ?>

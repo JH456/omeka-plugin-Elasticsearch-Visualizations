@@ -14,24 +14,22 @@
 <?php echo head(array('title' => __('Elasticsearch'), 'bodyclass' => 'w3Page'));?>
 
 
-
-
 <!-- SEARCH BAR -->
-<section class='w3-col l3'>
+<div class='w3-col l3' style="height: inherit; 
+                              box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);">
 
-    <div>
-        <?php echo $this->partial('search/partials/searchbar.php', array('query' => $query)); ?>
+    <div id=elasticsearch-search_block style="background-color: #eeb211">
+        <div id="elasticsearch-searchbar" style="padding: 10px;">
+            <?php echo $this->partial('search/partials/searchbar.php', array('query' => $query)); ?>
+        </div>
+
+        <div id="elasticsearch-help"  style="display:none;">
+            <?php echo $this->partial('search/partials/help.php'); ?>
+        </div>
     </div>
-
-    <div id="elasticsearch-help"  style="display:none;">
-        <?php echo $this->partial('search/partials/help.php'); ?>
-    </div>
-
-    <?php $totalResults = isset($results['hits']['total']) ? $results['hits']['total'].' '.__('results') : null; ?>
-    <h6><?php echo __('Search') . " ($totalResults)"; ?></h6>
 
     <?php if($results): ?>
-        <div style="overflow:scroll; max-height:684px;" >
+        <div id="elasticsearch-documents" style="overflow-y:scroll; height:70%;">
             <?php if(count($results['hits']['hits']) > 0): ?>
                 <?php foreach($results['hits']['hits'] as $hit): ?>
                     <?php echo $this->partial('search/partials/hit.php', array('hit' => $hit)); ?>
@@ -39,17 +37,24 @@
             <?php else: ?>
                 <?php echo __("Search did not return any results."); ?>
             <?php endif; ?>
-
-            <?php echo pagination_links(); ?>
         </div>
-    <?php else: ?>
+        <div id="elasticsearch-footer" style="border-top: 3px solid #eeb211;">
+             <div class='w3-col l7' style="padding:10px; color: #eeb211; font-weight: bold;">
+                <?php $totalResults = isset($results['hits']['total']) ? $results['hits']['total'].' '.__('results') : null; ?>
+                <?php echo __('Search Total:') . " $totalResults"; ?>
+            </div>
+            <div class='w3-col l4' style="float:right; padding-left: 10px; padding-top: 10px;">
+                 <?php echo pagination_links(); ?>
+            </div> 
+        </div>
+   <?php else: ?>
         <div>
             <h2><?php echo __("Search failed"); ?></h2>
             <p><?php echo __("The search query could not be executed. Please check your search query and try again."); ?></p>
         </div>
     <?php endif;  ?>
 
-</section>
+</div>
 
 <!-- RESULTS -->
 <?php
@@ -58,7 +63,7 @@
 
 <!-- Search Results -->
 
-<div class='w3-col l9'>
+<div class='w3-col l9' style="height: inherit;">
 
     <?php if($results): ?>
 <!--
@@ -71,7 +76,7 @@
             ?>
         </section>
 -->
-        <div>
+        <div style="height: inherit;">
             <?php echo $this->partial('search/partials/graph.php'/*, array('graphData' => $graphData)*/); ?>
         </div>
     <?php else: ?>

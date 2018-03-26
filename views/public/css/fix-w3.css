@@ -2,3 +2,12 @@
   box-sizing: initial;
   font-size: .95em;
 }
+
+DIV.gt-page-body {
+  max-width: 100% !important;
+  height: 700px;
+}
+
+#content {
+  padding: 0 0 !important;
+}
