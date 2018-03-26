@@ -6,3 +6,11 @@
   stroke: #fff;
   stroke-width: 0px;
 }
+
+DIV.gt-page-body {
+  max-width: 100% !important; 
+}
+
+#content {
+  padding: 0 0 !important;
+}
