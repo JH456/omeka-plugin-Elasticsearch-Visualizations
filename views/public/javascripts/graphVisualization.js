@@ -107,8 +107,93 @@ let graphVisualization = (function() {
         d.fy = null;
     }
 
+    function appendURLParam(url, paramName, paramVal) {
+        if (url.indexOf('?') !== -1) {
+            return url + '&' + paramName + '=' + paramVal;
+        } else {
+            return url + '?' + paramName + '=' + paramVal;
+        }
+    }
+
+    function filterSingletonTags(graphData) {
+        let tagCounts = {}
+        for (let i = 0; i < graphData.links.length; i++) {
+            let tagName = graphData.links[i].target
+            if (tagCounts[tagName]) {
+                tagCounts[tagName]++
+            } else  {
+                tagCounts[tagName] = 1
+            }
+        }
+        let i = 0
+        while (i < graphData.links.length) {
+            let tagName = graphData.links[i].target
+            let tagCount = tagCounts[tagName]
+            if (tagCount === 1) {
+                graphData.links.splice(i, 1)
+            } else {
+                i++
+            }
+        }
+        i = 0
+        while (i < graphData.nodes.length) {
+            let tagName = graphData.nodes[i].id
+            let tagCount = tagCounts[tagName] || 2 // If not present, the node
+                                                   // is not a tag node
+            if (tagCount === 1) {
+                graphData.nodes.splice(i, 1)
+            } else {
+                i++
+            }
+        }
+
+        return graphData
+    }
+
+    function getDataAndConstructGraph() {
+        jQuery.post(appendURLParam(window.location.href, 'graphData', 0), {}, function(partialData) {
+            let totalResults = partialData.totalResults;
+            let limit = partialData.limit;
+            let completeData = {
+                nodes: partialData.nodes,
+                links: partialData.links
+            };
+            let nodeIDSet = new Set()
+            for (let i = 0; i < partialData.nodes.length; i++) {
+                nodeIDSet.add(partialData.nodes[i].id);
+            }
+            if (totalResults <= limit) {
+                renderGraphOnSVG({
+                  svgID: 'connections-graph',
+                  data: filterSingletonTags(completeData)
+                });
+            } else  {
+                let remainingRequests = Math.ceil((totalResults - limit) / limit);
+                let totalRequests = remainingRequests;
+                for (let i = 1; i <= totalRequests; i++) {
+                    jQuery.post(appendURLParam(window.location.href, 'graphData', i * limit), {}, function(chunk) {
+                        remainingRequests--;
+                        for (let j = 0; j < chunk.nodes.length; j++) {
+                            if (!nodeIDSet.has(chunk.nodes[j].id)) {
+                                nodeIDSet.add(chunk.nodes[j].id);
+                                completeData.nodes.push(chunk.nodes[j]);
+                            }
+                        }
+                        completeData.links = completeData.links.concat(chunk.links);
+                        if (remainingRequests === 0) {
+                            renderGraphOnSVG({
+                              svgID: 'connections-graph',
+                              data: filterSingletonTags(completeData)
+                            });
+                        }
+                    }, 'json');
+                }
+            }
+        }, 'json');
+    }
+
     return {
-        renderGraphOnSVG
+        getDataAndConstructGraph
     }
 }())
 
