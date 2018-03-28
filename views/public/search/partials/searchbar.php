@@ -17,16 +17,9 @@
 
 <customdiv id="elasticsearch-search">
     <form id="elasticsearch-search-form">
-        <input type="text" placeholder="Search" title="<?php echo __('Search keywords') ?>" name="q" value="<?php echo htmlspecialchars(array_key_exists('q', $_GET) ? $_GET['q'] : '', ENT_QUOTES); ?>" />
-        <?php foreach($query['facets'] as $facet_name => $facet_values): ?>
-            <?php if(is_array($facet_values)): ?>
-                <?php foreach($facet_values as $facet_value): ?>
-                    <input type="hidden" name="<?php echo "facet_{$facet_name}[]"; ?>" value="<?php echo $facet_value; ?>">
-                <?php endforeach; ?>
-            <?php else: ?>
-                <input type="hidden" name="<?php echo "facet_{$facet_name}"; ?>" value="<?php echo $facet_values; ?>">
-            <?php endif; ?>
-        <?php endforeach; ?>
+        <input type="text" placeholder="Search" 
+	       title="<?php echo __('Search keywords') ?>" name="q" 
+               value="<?php echo htmlspecialchars(array_key_exists('q', $_GET) ? $_GET['q'] : '', ENT_QUOTES); ?>" />
         <input type="submit" value="Search" />
         <br>
         <a href="javascript:void(0);" id="elasticsearch-help-btn" style="display:block;clear:both; 
