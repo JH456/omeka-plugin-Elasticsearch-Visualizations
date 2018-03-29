@@ -155,17 +155,20 @@ let graphVisualization = (function() {
             let totalResults = partialData.totalResults;
             let limit = partialData.limit;
             let completeData = {
-                nodes: partialData.nodes,
+                nodes: [],
                 links: partialData.links
             };
             let nodeIDSet = new Set()
             for (let i = 0; i < partialData.nodes.length; i++) {
-                nodeIDSet.add(partialData.nodes[i].id);
+                if (!nodeIDSet.has(partialData.nodes[i].id)) {
+                    nodeIDSet.add(partialData.nodes[i].id);
+                    completeData.nodes.push(partialData.nodes[i]);
+                }
             }
             if (totalResults <= limit) {
                 renderGraphOnSVG({
-                  svgID: 'connections-graph',
-                  data: filterSingletonTags(completeData)
+                    svgID: 'connections-graph',
+                    data: filterSingletonTags(completeData)
                 });
             } else  {
                 let remainingRequests = Math.ceil((totalResults - limit) / limit);
