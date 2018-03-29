@@ -17,11 +17,14 @@
 
 <customdiv id="elasticsearch-search">
     <form id="elasticsearch-search-form">
-        <input type="text" placeholder="Search" 
-	       title="<?php echo __('Search keywords') ?>" name="q" 
+    
+        <input type="text"
+               placeholder="Search" 
+               title="<?php echo __('Search keywords') ?>" name="q" 
                value="<?php echo htmlspecialchars(array_key_exists('q', $_GET) ? $_GET['q'] : '', ENT_QUOTES); ?>" />
-        <input type="submit" value="Search" />
-        <br>
+               
+        <input type="submit" value="Search" style="width:25%"/>
+        
         <a href="javascript:void(0);" id="elasticsearch-help-btn" style="display:block;clear:both; 
                                                                          color:white;
                                                                          font-weight:bold;
@@ -29,5 +32,6 @@
                                                                          padding-left: 20px;">
             <?php echo __("Search Help"); ?>
         </a>
+        
     </form>
 </customdiv>
