@@ -10,7 +10,7 @@
 <?php queue_css_file('fix-w3'); ?>
 <?php queue_js_url('https://d3js.org/d3.v4.min.js'); ?>
 <?php queue_js_file('graphVisualization'); ?>
-
+<?php queue_js_file('filter'); ?>
 <?php echo head(array('title' => __('Elasticsearch'), 'bodyclass' => 'w3Page'));?>
 
 
@@ -70,6 +70,15 @@
     <?php 
     if($results): 
     ?>
+	<div style="position: absolute;right: 75px">
+	     <ul class="fa-ul" style="position:relative" id="tags">
+	     </ul>
+        </div>
+	<script>
+	    var results = <?php echo json_encode($results) ?>;
+	    console.log(results)
+    	    filter.generateFilter(results['aggregations']['tags']['buckets']);
+	</script>
         <div style="height: inherit;">
             <?php echo $this->partial('search/partials/graph.php'/*, array('graphData' => $graphData)*/); ?>
         </div>
