@@ -3,8 +3,8 @@
 }
 
 .nodes circle {
-  stroke: #fff;
-  stroke-width: 0px;
+  stroke-width: 3px;
+  stroke-opacity: .6;
 }
 
 DIV.gt-page-body {
