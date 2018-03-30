@@ -2,10 +2,10 @@
 
 let graphVisualization = (function() {
     let simulation = d3.forceSimulation()
+    let svgID = 'connections-graph'
+    let completeData = {}
 
-    function renderGraphOnSVG(paramsObject) {
-        let svgID = paramsObject.svgID
-        let graph = paramsObject.data
+    function renderGraphOnSVG(graphData) {
         let svgBackgroundID = "svg-background"
 
         let svg = d3.select("#" + svgID)
@@ -24,16 +24,18 @@ let graphVisualization = (function() {
 
         svg.call(zoom)
 
-        let link = setupLinkBehavior(container, graph, color)
+        let link = setupLinkBehavior(container, graphData, color)
 
-        let node = setupNodeBehavior(container, graph, color)
+        let node = setupNodeBehavior(container, graphData, color)
+
+        let tooltip = setupTooltipBehavior(container, graphData, color)
 
         simulation
-            .nodes(graph.nodes)
+            .nodes(graphData.nodes)
             .on("tick", ticked);
 
         simulation.force("link")
-            .links(graph.links);
+            .links(graphData.links);
 
         function ticked() {
             link
@@ -71,7 +73,19 @@ let graphVisualization = (function() {
                 .on("end", dragEnded));
 
         node.append("title")
-            .text(function(d) { return d.id; });
+            .text(function(d) {
+                let result = d.title || d.id;
+                if (d.tags) {
+                    for (let i = 0; i < d.tags.length; i++) {
+                        result += "; " + d.tags[i];
+                    }
+                }
+                return result;
+            });
+
+        node.on("click", function(d) {
+            window.open("/items/show/" + d.id.split("_")[1]);
+        });
         return node
     }
 
@@ -84,6 +98,29 @@ let graphVisualization = (function() {
             .attr("stroke", function(d) { return color(d.group); })
             .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
         return link
+    }
+
+    function setupTooltipBehavior(svg, graph, color) {
+        var tooltip = svg.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
+        svg.selectAll("circle")
+            .on("mouseover", function(d) {
+                tooltip.transition()
+                .duration(200)
+                .style("opacity", 0.9);
+
+                tooltip.html("fffffffffffffff" + "<br>")
+                .style("left", d3.event.pageX + "px")
+                .style("top", (d3.event.pageY - 28) + "px");
+            })
+            .on("mouseout", function(d) {
+                tooltip.transition()
+                .style("opacity", 0);
+            });
+
+        return tooltip;
     }
 
     function dragStarted(d) {
@@ -115,7 +152,7 @@ let graphVisualization = (function() {
         }
     }
 
-    function filterSingletonTags(graphData) {
+    function filterRareTags(graphData, minimumMentionCount) {
         let tagCounts = {}
         for (let i = 0; i < graphData.links.length; i++) {
             let tagName = graphData.links[i].target
@@ -129,7 +166,7 @@ let graphVisualization = (function() {
         while (i < graphData.links.length) {
             let tagName = graphData.links[i].target
             let tagCount = tagCounts[tagName]
-            if (tagCount === 1) {
+            if (tagCount < minimumMentionCount) {
                 graphData.links.splice(i, 1)
             } else {
                 i++
@@ -138,9 +175,8 @@ let graphVisualization = (function() {
         i = 0
         while (i < graphData.nodes.length) {
             let tagName = graphData.nodes[i].id
-            let tagCount = tagCounts[tagName] || 2 // If not present, the node
-                                                   // is not a tag node
-            if (tagCount === 1) {
+            let tagCount = tagCounts[tagName] || minimumMentionCount
+            if (tagCount < minimumMentionCount) {
                 graphData.nodes.splice(i, 1)
             } else {
                 i++
@@ -150,44 +186,53 @@ let graphVisualization = (function() {
         return graphData
     }
 
+    function addChunkToCompleteData(includedNodeSet, dataChunk) {
+        let documentsToLinks = {}
+        for (let i = 0; i < dataChunk.links.length; i++) {
+            let link = dataChunk.links[i]
+            let documentName = link.source
+            if (!documentsToLinks[documentName]) {
+                documentsToLinks[documentName] = [link]
+            } else {
+                documentsToLinks[documentName].push(link)
+            }
+        }
+        for (let i = 0; i < dataChunk.nodes.length; i++) {
+            let nodeId = dataChunk.nodes[i].id
+            if (!includedNodeSet.has(nodeId)) {
+                includedNodeSet.add(nodeId);
+                completeData.nodes.push(dataChunk.nodes[i]);
+                let links = documentsToLinks[nodeId]
+                if (links) {
+                    for (let j = 0; j < links.length; j++) {
+                        completeData.links.push(links[j])
+                    }
+                }
+            }
+        }
+    }
+
     function getDataAndConstructGraph() {
         jQuery.post(appendURLParam(window.location.href, 'graphData', 0), {}, function(partialData) {
             let totalResults = partialData.totalResults;
             let limit = partialData.limit;
-            let completeData = {
-                nodes: [],
-                links: partialData.links
-            };
-            let nodeIDSet = new Set()
-            for (let i = 0; i < partialData.nodes.length; i++) {
-                if (!nodeIDSet.has(partialData.nodes[i].id)) {
-                    nodeIDSet.add(partialData.nodes[i].id);
-                    completeData.nodes.push(partialData.nodes[i]);
-                }
-            }
+
+            completeData.nodes = []
+            completeData.links = []
+
+            let includedNodeSet = new Set()
+            addChunkToCompleteData(includedNodeSet, partialData)
             if (totalResults <= limit) {
-                renderGraphOnSVG({
-                    svgID: 'connections-graph',
-                    data: filterSingletonTags(completeData)
-                });
+                renderGraphOnSVG(filterRareTags(completeData, 2));
             } else  {
                 let remainingRequests = Math.ceil((totalResults - limit) / limit);
                 let totalRequests = remainingRequests;
                 for (let i = 1; i <= totalRequests; i++) {
-                    jQuery.post(appendURLParam(window.location.href, 'graphData', i * limit), {}, function(chunk) {
+                    jQuery.post(appendURLParam(window.location.href, 'graphData', i * limit), {}, function(dataChunk) {
                         remainingRequests--;
-                        for (let j = 0; j < chunk.nodes.length; j++) {
-                            if (!nodeIDSet.has(chunk.nodes[j].id)) {
-                                nodeIDSet.add(chunk.nodes[j].id);
-                                completeData.nodes.push(chunk.nodes[j]);
-                            }
-                        }
-                        completeData.links = completeData.links.concat(chunk.links);
+                        addChunkToCompleteData(includedNodeSet, dataChunk)
                         if (remainingRequests === 0) {
-                            renderGraphOnSVG({
-                              svgID: 'connections-graph',
-                              data: filterSingletonTags(completeData)
-                            });
+                            renderGraphOnSVG(filterRareTags(completeData, 2));
                         }
                     }, 'json');
                 }
