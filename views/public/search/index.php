@@ -15,7 +15,7 @@
 
 
 <!-- SEARCH BAR -->
-<div class='w3-col l4' style="height: inherit; 
+<div class='w3-col m5 l4' style="height: inherit; 
                               box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);">
 
     <div id=elasticsearch-search_block style="background-color: #eeb211">
@@ -65,7 +65,7 @@
 
 <!-- Search Results -->
 
-<div class='w3-col l8' style="height: inherit;">
+<div class='w3-col m7 l8' style="height: inherit;">
 
     <?php 
     if($results): 
