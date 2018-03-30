@@ -67,10 +67,10 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
         }
 
         // $graphData = $this->_generateGraphData($totalResults);
-	$tags = [
-	    "root" => ["box1", "box2"],
-	    "box1" => ["folder1", "folder2"]
-	];
+        $tags = [
+            "root" => ["box1", "box2"],
+            "box1" => ["folder1", "folder2"]
+        ];
 
         $this->view->assign('query', $query);
         $this->view->assign('results', $pageResults);
@@ -101,7 +101,7 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
                 $nodes[] = array(
                     "title" => $hitName,
                     "group" => 1,
-                    "tags" => $hit['_source']['tags'],
+                    "tags" => isset($hit['_source']['tags']) ? $hit['_source']['tags'] : [],
                     "id" => $hitId
                 );
                 $documentHasTags = isset($hit['_source']['tags']);
