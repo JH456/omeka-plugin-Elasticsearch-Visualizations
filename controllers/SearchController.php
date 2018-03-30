@@ -27,7 +27,7 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
                 'showNotPublic'     => $user && is_allowed('Items', 'showNotPublic'),
                 '_source'           => [
                     'include' => ['tags', 'title']
-                ]
+                ],
             ]
         );
         $graphData = $this->_generateGraphData($totalResults, $limit);
@@ -67,10 +67,14 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
         }
 
         // $graphData = $this->_generateGraphData($totalResults);
+	$tags = [
+	    "root" => ["box1", "box2"],
+	    "box1" => ["folder1", "folder2"]
+	];
 
         $this->view->assign('query', $query);
         $this->view->assign('results', $pageResults);
-        // $this->view->assign('graphData', $graphData);
+        $this->view->assign('tags', $tags);
     }
 
     private function _search($searchParams) {
@@ -93,18 +97,21 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
             $tagsToDocuments = array();
             foreach($hits as $hit):
                 $hitName = $hit['_source']['title'];
+                $hitId = $hit['_id'];
                 $nodes[] = array(
-                    "id" => $hitName,
-                    "group" => 1
+                    "title" => $hitName,
+                    "group" => 1,
+                    "tags" => $hit['_source']['tags'],
+                    "id" => $hitId
                 );
                 $documentHasTags = isset($hit['_source']['tags']);
                 if ($documentHasTags) {
                     $tags = $hit['_source']['tags'];
                     foreach($tags as $tagName):
                         if (!isset($tagsToDocuments[$tagName])) {
-                            $tagsToDocuments[$tagName] = array($hitName);
+                            $tagsToDocuments[$tagName] = array($hitId);
                         } else {
-                            $tagsToDocuments[$tagName][] = $hitName;
+                            $tagsToDocuments[$tagName][] = $hitId;
                         }
                      endforeach;
                 }
@@ -113,7 +120,6 @@ class Elasticsearch_SearchController extends Omeka_Controller_AbstractActionCont
                 $group = base_convert(md5($tagName), 16, 10);
                 $nodes[] = array(
                     "id" => $tagName,
-                    "name" => $tagName,
                     "group" => $group
                 );
                 for ($i = 0; $i < count($documentsWithTag); $i++) {
