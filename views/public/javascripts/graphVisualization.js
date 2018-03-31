@@ -24,15 +24,15 @@ var graphVisualization = (function() {
 
     }
 
+    function resetSVG() {
+        simulation.nodes([])
+            .on("tick", null);
+        simulation.force("link").links([])
+        svg.html("")
+        simulation.restart()
+    }
 
     function renderGraphOnSVG(graphData) {
-
-        function resetSVG() {
-            simulation.nodes([])
-                .on("tick", null);
-            simulation.force("link").links([])
-            svg.html("")
-        }
 
         resetSVG()
 
@@ -258,16 +258,37 @@ var graphVisualization = (function() {
         }, 'json');
     }
 
-    function filterTagsAndReloadGraph(exclusionFilterRegexStrings) {
+    function passesFilters(tagName, regexFilters) {
+        return !regexFilters.some(function(regex) {
+            return regex.test(tagName)
+        })
+    }
+
+    function filterTagsFromGraphData(exclusionFilterRegexStrings, graphData) {
         var regexFilters = []
         for (var i = 0; i < exclusionFilterRegexStrings.length; i++) {
             regexFilters.push(new RegExp(exclusionFilterRegexStrings[i]))
         }
+        return  {
+            nodes: graphData.nodes.filter(function(node) {
+                    return passesFilters(node.id, regexFilters)
+                }),
+            links: graphData.links.filter(function(link) {
+                    return passesFilters(link.target.id, regexFilters)
+                })
+        }
+    }
+
+    function filterAndReloadGraph(exclusionFilterRegexStrings) {
+        var filteredData = filterRareTags(
+            filterTagsFromGraphData(exclusionFilterRegexStrings, completeData),
+            2)
+        renderGraphOnSVG(filteredData)
     }
 
     return {
         getDataAndConstructGraph,
-        filterTagsAndReloadGraph,
+        filterAndReloadGraph,
         initSimulation
     }
 }())
