@@ -3,8 +3,6 @@
 var graphVisualization = (function() {
     var simulation = d3.forceSimulation()
     var svgID = 'connections-graph'
-    var svgBackgroundID = "svg-background"
-    var completeData = {}
 
     var svg
     var svgWidth
@@ -21,18 +19,16 @@ var graphVisualization = (function() {
             .force("link", d3.forceLink().id(function(d) { return d.id; }))
             .force("charge", d3.forceManyBody())
             .force("center", d3.forceCenter(svgWidth / 2, svgHeight / 2));
-
-    }
-
-    function resetSVG() {
-        simulation.nodes([])
-            .on("tick", null);
-        simulation.force("link").links([])
-        svg.html("")
-        simulation.restart()
     }
 
     function renderGraphOnSVG(graphData) {
+        function resetSVG() {
+            simulation.nodes([])
+                .on("tick", null);
+            simulation.force("link").links([])
+            svg.html("")
+            simulation.restart()
+        }
 
         resetSVG()
 
@@ -162,133 +158,8 @@ var graphVisualization = (function() {
         d.fy = null;
     }
 
-    function appendURLParam(url, paramName, paramVal) {
-        if (url.indexOf('?') !== -1) {
-            return url + '&' + paramName + '=' + paramVal;
-        } else {
-            return url + '?' + paramName + '=' + paramVal;
-        }
-    }
-
-    function filterRareTags(graphData, minimumMentionCount) {
-        var tagCounts = {}
-        for (var i = 0; i < graphData.links.length; i++) {
-            var tagName = graphData.links[i].target
-            if (tagCounts[tagName]) {
-                tagCounts[tagName]++
-            } else  {
-                tagCounts[tagName] = 1
-            }
-        }
-        var i = 0
-        while (i < graphData.links.length) {
-            var tagName = graphData.links[i].target
-            var tagCount = tagCounts[tagName]
-            if (tagCount < minimumMentionCount) {
-                graphData.links.splice(i, 1)
-            } else {
-                i++
-            }
-        }
-        i = 0
-        while (i < graphData.nodes.length) {
-            var tagName = graphData.nodes[i].id
-            var tagCount = tagCounts[tagName] || minimumMentionCount
-            if (tagCount < minimumMentionCount) {
-                graphData.nodes.splice(i, 1)
-            } else {
-                i++
-            }
-        }
-
-        return graphData
-    }
-
-    function addChunkToCompleteData(includedNodeSet, dataChunk) {
-        var documentsToLinks = {}
-        for (var i = 0; i < dataChunk.links.length; i++) {
-            var link = dataChunk.links[i]
-            var documentName = link.source
-            if (!documentsToLinks[documentName]) {
-                documentsToLinks[documentName] = [link]
-            } else {
-                documentsToLinks[documentName].push(link)
-            }
-        }
-        for (var i = 0; i < dataChunk.nodes.length; i++) {
-            var nodeId = dataChunk.nodes[i].id
-            if (!includedNodeSet.has(nodeId)) {
-                includedNodeSet.add(nodeId);
-                completeData.nodes.push(dataChunk.nodes[i]);
-                var links = documentsToLinks[nodeId]
-                if (links) {
-                    for (var j = 0; j < links.length; j++) {
-                        completeData.links.push(links[j])
-                    }
-                }
-            }
-        }
-    }
-
-    function getDataAndConstructGraph() {
-        jQuery.post(appendURLParam(window.location.href, 'graphData', 0), {}, function(partialData) {
-            var totalResults = partialData.totalResults;
-            var limit = partialData.limit;
-
-            completeData.nodes = []
-            completeData.links = []
-
-            var includedNodeSet = new Set()
-            addChunkToCompleteData(includedNodeSet, partialData)
-            if (totalResults <= limit) {
-                renderGraphOnSVG(filterRareTags(completeData, 2));
-            } else  {
-                var remainingRequests = Math.ceil((totalResults - limit) / limit);
-                var totalRequests = remainingRequests;
-                for (var i = 1; i <= totalRequests; i++) {
-                    jQuery.post(appendURLParam(window.location.href, 'graphData', i * limit), {}, function(dataChunk) {
-                        remainingRequests--;
-                        addChunkToCompleteData(includedNodeSet, dataChunk)
-                        if (remainingRequests === 0) {
-                            renderGraphOnSVG(filterRareTags(completeData, 2));
-                        }
-                    }, 'json');
-                }
-            }
-        }, 'json');
-    }
-
-    function passesFilters(tagName, regexFilters) {
-        return !regexFilters.some(function(regex) {
-            return regex.test(tagName)
-        })
-    }
-
-    function filterTagsFromGraphData(exclusionFilterRegexStrings, graphData) {
-        var regexFilters = []
-        for (var i = 0; i < exclusionFilterRegexStrings.length; i++) {
-            regexFilters.push(new RegExp(exclusionFilterRegexStrings[i]))
-        }
-        return  {
-            nodes: graphData.nodes.filter(function(node) {
-                    return passesFilters(node.id, regexFilters)
-                }),
-            links: graphData.links.filter(function(link) {
-                    return passesFilters(link.target.id, regexFilters)
-                })
-        }
-    }
-
-    function filterAndReloadGraph(exclusionFilterRegexStrings) {
-        var filteredData = filterRareTags(
-            filterTagsFromGraphData(exclusionFilterRegexStrings, completeData),
-            2)
-        renderGraphOnSVG(filteredData)
-    }
-
     return {
-        getDataAndConstructGraph,
-        filterAndReloadGraph,
+        renderGraphOnSVG,
         initSimulation
     }
 }())

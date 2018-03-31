@@ -10,15 +10,17 @@
 <?php queue_css_file('fix-w3'); ?>
 <?php queue_js_url('https://d3js.org/d3.v4.min.js'); ?>
 <?php queue_js_file('graphVisualization'); ?>
-<?php queue_js_file('filter'); ?>
+<?php queue_js_file('graphFilterer'); ?>
+<?php queue_js_file('graphDataRequester'); ?>
+<?php queue_js_file('filterMenu'); ?>
 <?php echo head(array('title' => __('Elasticsearch'), 'bodyclass' => 'w3Page'));?>
 
 
 <!-- SEARCH BAR -->
-<div class='w3-col m5 l4' style="height: inherit; 
+<div class='w3-col m5 l4' style="height: inherit;
                               box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);">
 
-    <div id=elasticsearch-search_block style="background-color: #eeb211">
+    <div id=elasticsearch-search_block style="background-color: #eeb211;">
         <div id="elasticsearch-searchbar" style="padding: 10px;">
             <?php echo $this->partial('search/partials/searchbar.php', array('query' => $query)); ?>
         </div>
@@ -27,12 +29,12 @@
             <?php echo $this->partial('search/partials/help.php'); ?>
         </div>
     </div>
-	
-    <?php 
+	<a onclick="graphVisualization.renderGraphOnSVG(graphFilterer.filterGraphData(['^(Box|Organization|Folder topic|Facility|Geopolitical Entity|Location|Event|Law|Misc).*'], completeGraphData))">Apply filter</a>
+    <?php
     if ($results):
     ?>
-        <div id="elasticsearch-documents" style="overflow-y:scroll; height:70%;">
-            <?php 
+        <div id="elasticsearch-documents" style="overflow-y:scroll; height:70%; ">
+            <?php
             if(count($results['hits']['hits']) > 0):
                 foreach($results['hits']['hits'] as $hit):
                     echo $this->partial('search/partials/hit.php', array('hit' => $hit));
@@ -49,17 +51,17 @@
             </div>
             <div class='w3-col l4' style="float:right; padding-left: 10px; padding-top: 10px;">
                  <?php echo pagination_links(); ?>
-            </div> 
+            </div>
         </div>
-    <?php 
-    else: 
+    <?php
+    else:
     ?>
         <div>
             <h2><?php echo __("Search failed"); ?></h2>
             <p><?php echo __("The search query could not be executed. Please check your search query and try again."); ?></p>
         </div>
-    <?php 
-    endif; 
+    <?php
+    endif;
     ?>
 </div>
 
@@ -67,8 +69,8 @@
 
 <div class='w3-col m7 l8' style="height: inherit;">
 
-    <?php 
-    if($results): 
+    <?php
+    if($results):
     ?>
 	<div style="position: absolute;right: 75px">
 	     <ul class="fa-ul" style="position:relative" id="tags">
@@ -76,21 +78,20 @@
         </div>
 	<script>
 	    var results = <?php echo json_encode($results) ?>;
-	    console.log(results)
-    	    filter.generateFilter(results['aggregations']['tags']['buckets']);
+        filterMenu.generateFilterMenu(results['aggregations']['tags']['buckets']);
 	</script>
         <div style="height: inherit;">
             <?php echo $this->partial('search/partials/graph.php'/*, array('graphData' => $graphData)*/); ?>
         </div>
-    <?php 
-    else: 
+    <?php
+    else:
     ?>
         <div>
             <h2><?php echo __("Search failed"); ?></h2>
             <p><?php echo __("The search query could not be executed. Please check your search query and try again."); ?></p>
         </div>
-    <?php 
-    endif;  
+    <?php
+    endif;
     ?>
 </div>
 
