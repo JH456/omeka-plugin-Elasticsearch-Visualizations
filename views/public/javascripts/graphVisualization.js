@@ -7,13 +7,11 @@ var graphVisualization = (function() {
     var svg
     var svgWidth
     var svgHeight
-    var color
 
     function initSimulation() {
         svg = d3.select("#" + svgID)
         svgWidth = +svg.attr('svgWidth')
         svgHeight = +svg.attr('svgHeight')
-        color = d3.scaleOrdinal(d3.schemeCategory20);
 
         simulation
             .force("link", d3.forceLink().id(function(d) { return d.id; }))
@@ -21,7 +19,11 @@ var graphVisualization = (function() {
             .force("center", d3.forceCenter(svgWidth / 2, svgHeight / 2));
     }
 
-    function renderGraphOnSVG(graphData) {
+    /**
+     * @param color: a function that takes in a String as input and produces a
+     * hexadecimal number color as output.
+     */
+    function renderGraphOnSVG(graphData, color) {
         function resetSVG() {
             simulation.nodes([])
                 .on("tick", null);
@@ -79,8 +81,8 @@ var graphVisualization = (function() {
             .data(graph.nodes)
             .enter().append("circle")
             .attr("r", function(d) {return d.group === 1 ? 4 : 8})
-            .attr("fill", function(d) { return color(d.group); })
-            .attr("stroke", function(d) { return color(d.group); })
+            .attr("fill", function(d) { return color(d.id, 'fill'); })
+            .attr("stroke", function(d) { return color(d.id, 'stroke'); })
             .call(d3.drag()
                 .on("start", dragStarted)
                 .on("drag", dragged)
@@ -109,7 +111,7 @@ var graphVisualization = (function() {
             .selectAll("line")
             .data(graph.links)
             .enter().append("line")
-            .attr("stroke", function(d) { return color(d.group); })
+            .attr("stroke", function(d) { return color(d.target, 'fill') === '#000000' ? color(d.target.id, 'fill') : color(d.target, 'fill'); })
             .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
         return linkElement
     }
