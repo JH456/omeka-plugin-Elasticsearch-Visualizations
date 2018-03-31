@@ -10,8 +10,9 @@ var graphVisualization = (function() {
 
     function initSimulation() {
         svg = d3.select("#" + svgID)
-        svgWidth = +svg.attr('svgWidth')
-        svgHeight = +svg.attr('svgHeight')
+        var svg_element = document.getElementById(svgID)
+        svgWidth = svg_element.width.baseVal.value
+        svgHeight = svg_element.height.baseVal.value
 
         simulation
             .force("link", d3.forceLink().id(function(d) { return d.id; }))
