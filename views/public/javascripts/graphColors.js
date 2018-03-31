@@ -68,10 +68,6 @@ var graphColors = (function() {
             return category.regex.test(tagName)
         })[colorName]
 
-        if (categoryColor === '#000000') {
-            console.log(tagName)
-        }
-
         return categoryColor
     }
 

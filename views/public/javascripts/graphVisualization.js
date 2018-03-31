@@ -53,7 +53,6 @@ var graphVisualization = (function() {
         simulation.force("link")
             .links(graphData.links);
 
-
         function ticked() {
             linkElement
                 .attr("x1", function(d) { return d.source.x; })

@@ -7,8 +7,10 @@
 <?php queue_js_string('ElasticsearchPlugin.setupSearchResults();'); ?>
 
 <?php queue_css_file('graphStyle'); ?>
+<?php queue_css_file('filterStyle'); ?>
 <?php queue_css_file('fix-w3'); ?>
 <?php queue_js_url('https://d3js.org/d3.v4.min.js'); ?>
+<?php queue_js_file('graphColors'); ?>
 <?php queue_js_file('graphVisualization'); ?>
 <?php queue_js_file('graphFilterer'); ?>
 <?php queue_js_file('graphDataRequester'); ?>
@@ -29,7 +31,6 @@
             <?php echo $this->partial('search/partials/help.php'); ?>
         </div>
     </div>
-	<a onclick="graphVisualization.renderGraphOnSVG(graphFilterer.filterGraphData(['^(Box|Organization|Folder topic|Facility|Geopolitical Entity|Location|Event|Law|Misc).*'], completeGraphData))">Apply filter</a>
     <?php
     if ($results):
     ?>
@@ -77,11 +78,9 @@
 	     </ul>
         </div>
 	<script>
-	    var results = <?php echo json_encode($results) ?>;
-        filterMenu.generateFilterMenu(results['aggregations']['tags']['buckets']);
 	</script>
         <div style="height: inherit;">
-            <?php echo $this->partial('search/partials/graph.php'/*, array('graphData' => $graphData)*/); ?>
+            <?php echo $this->partial('search/partials/graph.php', array('results' => $results) ); ?>
         </div>
     <?php
     else:
