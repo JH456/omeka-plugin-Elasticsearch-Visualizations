@@ -1,21 +1,23 @@
 'use strict';
 
 var filterMenu = (function () {
-    function filter(selectedDict, completeGraph) {
-        console.log(completeGraph)
+    function filter(selectedDict, completeGraph, oldFilter) {
         var filterText = []
         for (var tag in selectedDict) {
             if (!selectedDict[tag]) {
                 var str = document.getElementById(tag).outerText
-                filterText.push(str + " ")
+		if (str != "")
+                    filterText.push(str)
             }
         }
-        console.log(filterText)
+	if (oldFilter.length == filterText.length)
+	    return filterText
+	console.log(filterText)
         graphVisualization.renderGraphOnSVG(graphFilterer.filterGraphData(filterText, completeGraph), graphColors.tagCategoryColors)
+	return filterText
     }
-
     function generateFilterMenu(tags, completeGraph) {
-        console.log(completeGraph)
+	var oldFilter = []
         var keywords = {
             "Folder topic": [],
             "Person": [],
@@ -27,17 +29,7 @@ var filterMenu = (function () {
             "Law": [],
             "Misc": [],
         };
-        var colors = {
-            "Folder topic": "#A6CEE3",
-            "Person": "#1F78B5",
-            "Facility": "#B2DF8A",
-            "Organization": "#33A02C",
-            "Geopolitical Entity": "#FB9A99",
-            "Location": "#E31A1C",
-            "Event": "#FDBF6F",
-            "Law": "#FF7F00",
-            "Misc": "#CAB2D6"
-        }
+	var keywordIds = {}
         for (var i = 0; i < tags.length; i++) {
             var tag = tags[i].key;
             var parts = tag.split(":");
@@ -53,19 +45,20 @@ var filterMenu = (function () {
         var root = document.getElementById("tags");
         var selectedDict = {};
         var downDict = {};
+	
         for (var word in keywords) {
             var li = document.createElement("li");
             var id = "element" + counter.toString();
+	    keywordIds[id] = word
             li.setAttribute("id", id);
             li.setAttribute("style", "border-style:solid;border-radius:25px;text-align:center;margin:5px;padding:4px;cursor:pointer;user-select:none;font-weight:bold")
             li.style.borderColor = graphColors.tagCategoryColors(word + ": ", 'stroke')
             li.style.backgroundColor = graphColors.tagCategoryColors(word + ": ", 'fill')
-            //li.style.borderColor = colors[word];
-            //li.style.backgroundColor = colors[word];
             var i = document.createElement("i");
             i.setAttribute("class", "fa-li fa fa-chevron-right arrow");
             i.setAttribute("style", "top:0.5em;left:-2.0em;");
             i.setAttribute("id", "btn" + counter.toString());
+	    //arrows
             i.addEventListener("click", function () {
                 id = event.path[0].id;
                 var down = false;
@@ -85,6 +78,7 @@ var filterMenu = (function () {
                     downDict[id] = true;
                 }
             });
+	    //parent categories
             li.addEventListener("click", function () {
                 id = event.path[0].id
                 var selected = true;
@@ -95,11 +89,21 @@ var filterMenu = (function () {
                 if (selected) {
                     selectedDict[id] = false;
                     document.getElementById(id).style.backgroundColor = "transparent"
-                    filter(selectedDict, completeGraph)
+                    oldFilter = filter(selectedDict, completeGraph, oldFilter)
                 } else {
-                    document.getElementById(id).style.backgroundColor = graphColors.tagCategoryColors(event.target.outerText.trim() + ": ", 'fill')
+		    var color = graphColors.tagCategoryColors(event.target.outerText.trim() + ": ", 'fill')
+		    if (color == "#000000") {
+			var parent = id;
+			if (!(id in keywordIds)) {
+			    parent = event.path[2].id
+			}
+			parent = keywordIds[parent]
+			color = graphColors.tagCategoryColors(parent + ": ", 'fill')
+		    }
+		    
+                    document.getElementById(id).style.backgroundColor = color
                     selectedDict[id] = true;
-                    filter(selectedDict, completeGraph)
+                    oldFilter = filter(selectedDict, completeGraph, oldFilter)
                 }
             });
             li.appendChild(i);

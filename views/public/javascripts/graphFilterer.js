@@ -6,9 +6,6 @@ var graphFilterer = (function() {
     }
 
     function filterTagsFromGraphData(exclusionFilterRegexStrings, graphData) {
-        if (!exclusionFilterRegexStrings || exclusionFilterRegexStrings.length === 0) {
-            return graphData
-        }
         var regexFilters = []
         for (var i = 0; i < exclusionFilterRegexStrings.length; i++) {
             regexFilters.push(new RegExp(exclusionFilterRegexStrings[i]))
