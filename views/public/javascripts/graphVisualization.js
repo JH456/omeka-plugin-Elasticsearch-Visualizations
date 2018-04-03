@@ -53,6 +53,14 @@ var graphVisualization = (function() {
         simulation.force("link")
             .links(graphData.links);
 
+        //Compute and save the degrees of each vertex
+        var edges = [];
+        for (var i = 0; i < graphData.links.length; i++) {
+            var cur = graphData.links[i];
+            cur.source.degree = (cur.source.degree || 0) + 1;
+            cur.target.degree = (cur.target.degree || 0) + 1;
+        }
+
         function ticked() {
             linkElement
                 .attr("x1", function(d) { return d.source.x; })
@@ -64,6 +72,21 @@ var graphVisualization = (function() {
                 .attr("cx", function(d) { return d.x; })
                 .attr("cy", function(d) { return d.y; });
         }
+    }
+
+    function toSparseMatrix(edges) {
+        var result = {};
+        for (var i = 0; i < edges.length; i++) {
+            var cur = edges[i];
+            if (result[cur[0]] === undefined || result[cur[1]] === undefined) {
+                result[cur[0]] = [];
+                result[cur[1]] = [];
+            }
+            result[cur[0]].push(cur[1]);
+            result[cur[1]].push(cur[0]);
+        }
+
+        return result;
     }
 
     function setupZoom(svg) {
@@ -80,7 +103,9 @@ var graphVisualization = (function() {
             .selectAll("circle")
             .data(graph.nodes)
             .enter().append("circle")
-            .attr("r", function(d) {return d.group === 1 ? 4 : 8})
+            .attr("r", function(d) {
+                return d.group === 1 ? 4 : Math.sqrt(d.degree) + 4;
+            })
             .attr("fill", function(d) { return color(d.id, 'fill'); })
             .attr("stroke", function(d) { return color(d.id, 'stroke'); })
             .call(d3.drag()
@@ -100,7 +125,12 @@ var graphVisualization = (function() {
             });
 
         node.on("click", function(d) {
-            window.open("/items/show/" + d.id.split("_")[1]);
+            if (d.group === 1) {
+                window.open("/items/show/" + d.id.split("_")[1]);
+            } else {
+                window.open("/elasticsearch?q=\""
+                    + (d.id.split(':')[1] || d.id).trim() + "\"");
+            }
         });
         return node
     }
