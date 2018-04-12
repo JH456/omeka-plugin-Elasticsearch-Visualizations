@@ -104,7 +104,7 @@ var graphVisualization = (function() {
             .data(graph.nodes)
             .enter().append("circle")
             .attr("r", function(d) {
-                return d.group === 1 ? 4 : Math.sqrt(d.degree) + 4;
+                return d.group === 1 ? 4 : Math.sqrt(d.degree || 0) + 4;
             })
             .attr("fill", function(d) { return color(d.id, 'fill'); })
             .attr("stroke", function(d) { return color(d.id, 'stroke'); })
@@ -126,10 +126,19 @@ var graphVisualization = (function() {
 
         node.on("click", function(d) {
             if (d.group === 1) {
-                window.open("/items/show/" + d.id.split("_")[1]);
+                window.open('/items/show/' + d.id.split("_")[1]);
             } else {
-                window.open("/elasticsearch?q=\""
-                    + (d.id.split(':')[1] || d.id).trim() + "\"");
+                var query = d.id;
+                var prefix = '';
+                if (d.id.indexOf('Box') >= 0 || d.id.indexOf('Folder') >= 0) {
+                    prefix = 'tags:';
+                }
+                if (query.indexOf(':') >= 0) {
+                    query = d.id.split(':')[1];
+                }
+                var url = '/elasticsearch?q=' + prefix +
+                    '"' + query.trim() + '"';
+                window.open(url);
             }
         });
         return node
