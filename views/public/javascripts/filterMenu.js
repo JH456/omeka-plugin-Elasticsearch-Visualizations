@@ -5,6 +5,7 @@ var filterMenu = (function () {
         var filterText = []
         for (var tag in selectedDict) {
             if (!selectedDict[tag]) {
+		console.log(document.getElementById(tag))
                 var str = document.getElementById(tag).outerText
                 if (str != "")
                     filterText.push(str)
@@ -12,13 +13,14 @@ var filterMenu = (function () {
         }
         if (oldFilter.length == filterText.length)
             return filterText
-        console.log(filterText)
+	console.log(filterText)
         graphVisualization.renderGraphOnSVG(graphFilterer.filterGraphData(filterText, completeGraph), graphColors.tagCategoryColors)
         return filterText
     }
     function generateFilterMenu(tags, completeGraph) {
         var oldFilter = []
         var keywords = {
+	    "Box": [],
             "Folder topic": [],
             "Person": [],
             "Facility": [],
@@ -27,19 +29,24 @@ var filterMenu = (function () {
             "Location": [],
             "Event": [],
             "Law": [],
-            "Misc": [],
         };
         var keywordIds = {}
         for (var i = 0; i < tags.length; i++) {
             var tag = tags[i].key;
-            var parts = tag.split(":");
-            if (parts === null) {
-                keywords["Misc"].push(tag);
-            } else if (parts[0] in keywords) {
-                keywords[parts[0]].push(parts[1]);
-            } else {
-                keywords["Misc"].push(parts[0]);
-            }
+	    if (tag.startsWith("Box")) {
+		keywords["Box"].push(tag)
+	    }
+	    else {
+		var s = ":"
+		var parts = tag.split(s);
+		if (parts === null) {
+                    keywords["Misc"].push(tag);
+		} else if (parts[0] in keywords) {
+                    keywords[parts[0]].push(parts[1]);
+		} else {
+                    keywords["Misc"].push(parts[0]);
+		}
+	    }
         }
         var counter = 0;
         var root = document.getElementById("tags");
@@ -52,8 +59,10 @@ var filterMenu = (function () {
             keywordIds[id] = word
             li.setAttribute("id", id);
             li.setAttribute("style", "border-style:solid;border-radius:25px;text-align:center;margin:5px;padding:4px;cursor:pointer;user-select:none;font-weight:bold")
-            li.style.borderColor = graphColors.tagCategoryColors(word + ": ", 'stroke')
-            li.style.backgroundColor = graphColors.tagCategoryColors(word + ": ", 'fill')
+	    var w = (word == "Box" ? " ." : ": ")
+	    li.style.borderColor = graphColors.tagCategoryColors(word + w, 'stroke')
+	    li.style.backgroundColor = graphColors.tagCategoryColors(word + w, 'fill')
+	    
             var i = document.createElement("i");
             i.setAttribute("class", "fa-li fa fa-chevron-right arrow");
             i.setAttribute("style", "top:0.5em;left:-2.0em;");
@@ -80,6 +89,7 @@ var filterMenu = (function () {
             });
             //parent categories
             li.addEventListener("click", function () {
+		console.log(event)
                 id = event.path[0].id
                 var selected = true;
                 if (id in selectedDict) {
@@ -91,14 +101,16 @@ var filterMenu = (function () {
                     document.getElementById(id).style.backgroundColor = "transparent"
                     oldFilter = filter(selectedDict, completeGraph, oldFilter)
                 } else {
-                    var color = graphColors.tagCategoryColors(event.target.outerText.trim() + ": ", 'fill')
+		    var w = (event.target.outerText.trim() == "Box" ? " ." : ": ")
+                    var color = graphColors.tagCategoryColors(event.target.outerText.trim() + w, 'fill')
                     if (color == "#000000") {
                         var parent = id;
                         if (!(id in keywordIds)) {
-                            parent = event.path[2].id
+                            parent = event.path[3].id
                         }
                         parent = keywordIds[parent]
-                        color = graphColors.tagCategoryColors(parent + ": ", 'fill')
+			var s = (parent == "Box" ? " ." : ": ")
+                        color = graphColors.tagCategoryColors(parent + s, 'fill')
                     }
 
                     document.getElementById(id).style.backgroundColor = color
@@ -108,6 +120,8 @@ var filterMenu = (function () {
             });
             li.appendChild(i);
             li.appendChild(document.createTextNode(word));
+	    //var div = document.createElement("div");
+	    //div.setAttribute("style", "overflow-y: scroll;height: 50px;")
             var ul = document.createElement("ul");
             ul.setAttribute("id", "child" + counter.toString());
             ul.setAttribute("style", "display:none;list-style:none");
@@ -118,11 +132,12 @@ var filterMenu = (function () {
                 liTemp.setAttribute("style", "font-weight: normal;")
                 counter += 1;
                 liTemp.setAttribute("id", "subElement" + counter.toString());
-                //liTemp.setAttribute("style", "display:none")
                 ul.appendChild(liTemp);
             }
             counter += 1;
-            li.appendChild(ul);
+	    //div.appendChild(ul)
+            //li.appendChild(div);
+	    li.appendChild(ul);
             root.appendChild(li);
         }
 
