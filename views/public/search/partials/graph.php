@@ -15,7 +15,7 @@
             jQuery('#show-graph-button').hide();
             var completeGraphData
             graphVisualization.initSimulation();
-            graphDataRequester.requestCompleteGraphData()
+            graphDataRequester.requestCompleteGraphData(3000)
             .then(function(data) {
                 completeGraphData = data
                 graphVisualization.renderGraphOnSVG(completeGraphData, graphColors.tagCategoryColors)

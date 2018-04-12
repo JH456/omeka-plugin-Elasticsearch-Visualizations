@@ -34,7 +34,7 @@ var graphDataRequester = (function() {
         }
     }
 
-    function addChunkToCompleteData(includedNodeSet, dataChunk, completeData) {
+    function addChunkToCompleteData(includedNodeSet, dataChunk, completeData, maxDocumentsInCompleteData, documentsAddedToGraph) {
         var documentsToLinks = {}
         for (var i = 0; i < dataChunk.links.length; i++) {
             var link = dataChunk.links[i]
@@ -46,26 +46,32 @@ var graphDataRequester = (function() {
             }
         }
         for (var i = 0; i < dataChunk.nodes.length; i++) {
-            var nodeId = dataChunk.nodes[i].id
+            var nodeId = dataChunk.nodes[i].id;
+            var nodeIsDocument = dataChunk.nodes[i].group === 1;
             if (!includedNodeSet.has(nodeId)) {
-                includedNodeSet.add(nodeId);
-                completeData.nodes.push(dataChunk.nodes[i]);
-                var links = documentsToLinks[nodeId]
-                if (links) {
-                    for (var j = 0; j < links.length; j++) {
-                        completeData.links.push(links[j])
+                if (nodeIsDocument && documentsAddedToGraph < maxDocumentsInCompleteData || !nodeIsDocument) {
+                    includedNodeSet.add(nodeId);
+                    completeData.nodes.push(dataChunk.nodes[i]);
+                    var links = documentsToLinks[nodeId]
+                    if (links) {
+                        for (var j = 0; j < links.length; j++) {
+                            completeData.links.push(links[j])
+                        }
+                    }
+                    if (nodeIsDocument) {
+                        documentsAddedToGraph++
                     }
                 }
             }
         }
+        return documentsAddedToGraph
     }
 
-    function requestCompleteGraphData() {
+    function requestCompleteGraphData(maxDocuments) {
         return new Promise(function(resolve, reject) {
             jQuery.post(setURLParam('graphData', 0), {}, function(partialData) {
-                var totalResults = partialData.totalResults;
-                var limit = partialData.limit;
-                console.log(partialData);
+                var totalResults = Math.min(partialData.totalResults, maxDocuments);
+                var maxDocumentsPerChunk = partialData.limit;
 
                 var completeData = {}
 
@@ -73,16 +79,16 @@ var graphDataRequester = (function() {
                 completeData.links = []
 
                 var includedNodeSet = new Set()
-                addChunkToCompleteData(includedNodeSet, partialData, completeData)
-                if (totalResults <= limit) {
+                var documentsAddedToGraph = addChunkToCompleteData(includedNodeSet, partialData, completeData, totalResults, 0);
+                if (totalResults <= maxDocumentsPerChunk) {
                     resolve(completeData)
                 } else  {
-                    var remainingRequests = Math.ceil((totalResults - limit) / limit);
+                    var remainingRequests = Math.ceil((totalResults - maxDocumentsPerChunk) / maxDocumentsPerChunk);
                     var totalRequests = remainingRequests;
                     for (var i = 1; i <= totalRequests; i++) {
-                        jQuery.post(setURLParam('graphData', i * limit), {}, function(dataChunk) {
+                        jQuery.post(setURLParam('graphData', i * maxDocumentsPerChunk), {}, function(dataChunk) {
                             remainingRequests--;
-                            addChunkToCompleteData(includedNodeSet, dataChunk, completeData)
+                            documentsAddedToGraph = addChunkToCompleteData(includedNodeSet, dataChunk, completeData, totalResults, documentsAddedToGraph);
                             if (remainingRequests === 0) {
                                 resolve(completeData)
                             }
