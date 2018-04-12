@@ -1,10 +1,36 @@
 var graphDataRequester = (function() {
 
-    function appendURLParam(url, paramName, paramVal) {
+    function setURLParam(paramName, paramVal) {
+        var url = window.location.href;
         if (url.indexOf('?') !== -1) {
+            var paramStart = url.indexOf(paramName + '=');
+            if (paramStart !== -1) {
+                var valueStart = paramStart + paramName.length + 1;
+                var valueEnd = url.indexOf('&', valueStart);
+                if (valueEnd === -1) {
+                    valueEnd = url.length;
+                }
+                return url.slice(0, valueStart) + paramVal + url.slice(valueEnd);
+            }
             return url + '&' + paramName + '=' + paramVal;
         } else {
             return url + '?' + paramName + '=' + paramVal;
+        }
+    }
+
+    function getURLParam(paramName) {
+        var url = window.location.href;
+        var paramsStart = url.indexOf('?') + 1;
+        if (paramsStart === 0) {
+            return undefined;
+        }
+        var paramsString = url.slice(paramsStart);
+        var params = paramsString.split('&');
+        for (var i = 0; i < params.length; i++) {
+            var param = params[i].split('=');
+            if (param[0] === paramName) {
+                return param[1];
+            }
         }
     }
 
@@ -36,9 +62,10 @@ var graphDataRequester = (function() {
 
     function requestCompleteGraphData() {
         return new Promise(function(resolve, reject) {
-            jQuery.post(appendURLParam(window.location.href, 'graphData', 0), {}, function(partialData) {
+            jQuery.post(setURLParam('graphData', 0), {}, function(partialData) {
                 var totalResults = partialData.totalResults;
                 var limit = partialData.limit;
+                console.log(partialData);
 
                 var completeData = {}
 
@@ -53,7 +80,7 @@ var graphDataRequester = (function() {
                     var remainingRequests = Math.ceil((totalResults - limit) / limit);
                     var totalRequests = remainingRequests;
                     for (var i = 1; i <= totalRequests; i++) {
-                        jQuery.post(appendURLParam(window.location.href, 'graphData', i * limit), {}, function(dataChunk) {
+                        jQuery.post(setURLParam('graphData', i * limit), {}, function(dataChunk) {
                             remainingRequests--;
                             addChunkToCompleteData(includedNodeSet, dataChunk, completeData)
                             if (remainingRequests === 0) {
@@ -67,6 +94,8 @@ var graphDataRequester = (function() {
     }
 
     return {
-        requestCompleteGraphData
+        requestCompleteGraphData,
+        getURLParam,
+        setURLParam
     }
 }())
