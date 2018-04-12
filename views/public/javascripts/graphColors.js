@@ -55,7 +55,7 @@ var graphColors = (function () {
         if (tagName.startsWith("Folder topic")) {
             tagName = "Folder topic";
         } else {
-            tagName = tagName.split(" ").trimRight(":")[0];
+            tagName = tagName.split(" ")[0].trimRight(":");
         }
         var category = tagCategories[tagName] || tagCategories["."];
         return category[colorType];
