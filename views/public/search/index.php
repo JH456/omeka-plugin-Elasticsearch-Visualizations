@@ -25,6 +25,7 @@
     <div id=elasticsearch-search_block style="background-color: #eeb211;">
         <div id="elasticsearch-searchbar" style="padding: 10px;">
             <?php echo $this->partial('search/partials/searchbar.php', array('query' => $query)); ?>
+            <?php echo $this->partial('search/partials/advancedsearch.php'); ?>
         </div>
 
         <div id="elasticsearch-help"  style="display:none;">
