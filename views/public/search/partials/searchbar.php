@@ -20,18 +20,20 @@
     
         <input type="text"
                placeholder="Search" 
-               title="<?php echo __('Search keywords') ?>" name="q" 
+               title="<?php echo __('Search keywords') ?>"
+               name="q"
                value="<?php echo htmlspecialchars(array_key_exists('q', $_GET) ? $_GET['q'] : '', ENT_QUOTES); ?>" />
                
-        <input type="submit" value="Search" style="width:25%"/>
+        <input type="submit" value="Search" style="width:20%"/>
+    
+        <button class="w3-button w3-black" onclick="modalOpen()">a</button>
         
-        <a href="javascript:void(0);" id="elasticsearch-help-btn" style="display:block;clear:both; 
+        <!--<a href="javascript:void(0);" id="elasticsearch-help-btn" style="display:block;clear:both; 
                                                                          color:white;
                                                                          font-weight:bold;
                                                                          padding:10px; 
                                                                          padding-left: 20px;">
-            <?php echo __("Search Help"); ?>
-        </a>
+        </a>-->
         
     </form>
 </customdiv>
