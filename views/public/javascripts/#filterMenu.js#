@@ -37,7 +37,7 @@ var filterMenu = (function () {
     }
     function deselectParent(id, selectedDict) {
 	selectedDict[id] = false;
-	document.getElementById(id).style.backgroundColor = "transparent"
+	
     }
     function selectChild(id, selectedDict) {
     }

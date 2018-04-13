@@ -52,10 +52,12 @@ var graphColors = (function () {
     }
 
     var tagCategoryColors = function (tagName, colorType) {
-        if (tagName.startsWith("Folder topic")) {
+        if (typeof(tagName) !== "string") {
+            tagName = ".";
+        } else if (tagName.startsWith("Folder topic")) {
             tagName = "Folder topic";
         } else {
-            tagName = tagName.split(" ")[0].trimRight(":");
+            tagName = tagName.split(" ")[0].split(':')[0];
         }
         var category = tagCategories[tagName] || tagCategories["."];
         return category[colorType];
