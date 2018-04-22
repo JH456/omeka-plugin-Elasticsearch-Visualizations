@@ -19,6 +19,9 @@
             .then(function(data) {
                 completeGraphData = data
                 graphVisualization.renderGraphOnSVG(completeGraphData, graphColors.tagCategoryColors)
+                // D3 does weird things to the nodes in complete data the first time it is run, and this
+                // makes it not work with the filters, so I need to call this twice because I am a
+                // potato
                 graphVisualization.renderGraphOnSVG(graphFilterer.filterGraphData([], completeGraphData), graphColors.tagCategoryColors)
                 var results = <?php echo json_encode($results) ?>;
                 filterMenu.generateFilterMenu(results['aggregations']['tags']['buckets'], completeGraphData)

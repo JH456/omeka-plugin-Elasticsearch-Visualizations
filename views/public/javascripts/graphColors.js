@@ -45,9 +45,12 @@ var graphColors = (function () {
             stroke: '#656173'
         },
         ".": {
-            regex: /.*/, // Catch all to match anything else
             fill: '#000000',
             stroke: '#000000'
+        },
+        "Date": {
+            fill: '#51371E',
+            stroke: '#11070E',
         }
     }
 

@@ -1,6 +1,6 @@
 var graphFilterer = (function() {
     function passesFilters(tagName, regexFilters) {
-        return !regexFilters.some(function(regex) {
+        return regexFilters.some(function(regex) {
             return regex.test(tagName)
         })
     }
@@ -12,7 +12,8 @@ var graphFilterer = (function() {
         }
         return  {
             nodes: graphData.nodes.filter(function(node) {
-                    return passesFilters(node.id, regexFilters)
+
+                    return node.group === 1 || passesFilters(node.id, regexFilters)
                 }),
             links: graphData.links.filter(function(link) {
                     return passesFilters(link.target.id, regexFilters)

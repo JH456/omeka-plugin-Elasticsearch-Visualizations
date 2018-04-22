@@ -4,17 +4,22 @@ var filterMenu = (function () {
     function filter(selectedDict, completeGraph, oldFilter) {
         var filterText = []
         for (var tag in selectedDict) {
-            if (!selectedDict[tag]) {
-                var str = document.getElementById(tag).outerText
+            if (selectedDict[tag]) {
+                //var str = document.getElementById(tag).outerText
+                var str = tag
                 if (str != "")
                     filterText.push(str)
             }
         }
         if (oldFilter.length == filterText.length)
             return filterText
-	console.log(filterText)
         graphVisualization.renderGraphOnSVG(graphFilterer.filterGraphData(filterText, completeGraph), graphColors.tagCategoryColors)
         return filterText
+    }
+    function getColorById(id, type) {
+	var w = (id == "Box" ? " ." : ": ")
+        var color = graphColors.tagCategoryColors(id + w, type)
+	return color
     }
     function collapse(id, downDict) {
 	var num = id.replace("btn", "");
@@ -25,7 +30,6 @@ var filterMenu = (function () {
 	return downDict;
     }
     function expand(id, downDict) {
-	console.log("expanding")
 	var num = id.replace("btn", "");
         var child = document.getElementById("child" + num);
 	document.getElementById(id).setAttribute("class", "fa-li fa fa-chevron-down arrow");
@@ -34,28 +38,54 @@ var filterMenu = (function () {
 	return downDict;
     }
     function selectParent(id, selectedDict) {
+	selectedDict[id] = true;
+	//var w = (id == "Box" ? " ." : ": ")
+        //var color = graphColors.tagCategoryColors(id + w, 'fill')
+	var color = getColorById(id, 'fill')
+        document.getElementById(id).style.backgroundColor = color;
+	return selectedDict
     }
     function deselectParent(id, selectedDict) {
 	selectedDict[id] = false;
-	document.getElementById(id).style.backgroundColor = "transparent"
+	document.getElementById(id).style.backgroundColor = "transparent";
+	return selectedDict;
     }
     function selectChild(id, selectedDict) {
+	if (id.startsWith("btn"))
+	    return selectedDict
+	var element = document.getElementById(id)
+	var parent = element.parentElement.parentElement
+	//selectedDict = selectParent(parent.id, selectedDict)
+	selectedDict[id] = true
+	element.style.backgroundColor = getColorById(parent.id, 'fill')
+	return selectedDict
     }
     function deselectChild(id, selectedDict) {
+	if (id.startsWith("btn"))
+	    return selectedDict
+	var element = document.getElementById(id)
+	var parent = element.parentElement.parentElement
+	//selectedDict = deselectParent(parent.id, selectedDict)
+	selectedDict[id] = false
+	element.style.backgroundColor = "transparent"
+	return selectedDict
     }
     function generateFilterMenu(tags, completeGraph) {
         var oldFilter = []
         var keywords = {
 	    "Box": [],
             "Folder topic": [],
+            "Folder": [],
             "Person": [],
-            "Facility": [],
             "Organization": [],
             "Geopolitical Entity": [],
-            "Location": [],
             "Event": [],
+            "Date": [],
+            "Facility": [],
+            "Location": [],
             "Law": [],
         };
+
         var keywordIds = {}
         for (var i = 0; i < tags.length; i++) {
             var tag = tags[i].key;
@@ -110,30 +140,15 @@ var filterMenu = (function () {
             //parent categories
             li.addEventListener("click", function () {
                 id = event.path[0].id
-                var selected = true;
+                var selected = false;
                 if (id in selectedDict) {
                     selected = selectedDict[id]
                 }
-		
-		
-		
                 if (selected) {
-		    selectedDict = (id in keywordIds ? deselectParent(selectedDict, id) : deselectChild(selectedDict, id))
+		    selectedDict = (id in keywordIds ? deselectParent(id, selectedDict) : deselectChild(id, selectedDict))
                 } else {
-		    var w = (event.target.outerText.trim() == "Box" ? " ." : ": ")
-                    var color = graphColors.tagCategoryColors(event.target.outerText.trim() + w, 'fill')
-                    if (color == "#000000") {
-                        var parent = id;
-                        if (!(id in keywordIds)) {
-                            parent = event.path[3].id
-                        }
-                        parent = keywordIds[parent]
-			var s = (parent == "Box" ? " ." : ": ")
-                        color = graphColors.tagCategoryColors(parent + s, 'fill')
-                    }
+		    selectedDict = (id in keywordIds ? selectParent(id, selectedDict) : selectChild(id, selectedDict))
 
-                    document.getElementById(id).style.backgroundColor = color
-                    selectedDict[id] = true;
                 }
 		oldFilter = filter(selectedDict, completeGraph, oldFilter)
             });
@@ -150,7 +165,8 @@ var filterMenu = (function () {
                 liTemp.appendChild(document.createTextNode(subTag));
                 liTemp.setAttribute("style", "font-weight: normal;")
                 counter += 1;
-                liTemp.setAttribute("id", "subElement" + counter.toString());
+		//selectedDict[subTag] = true
+		liTemp.setAttribute("id", subTag)
                 ul.appendChild(liTemp);
             }
             counter += 1;
@@ -164,6 +180,7 @@ var filterMenu = (function () {
             if (keywords.hasOwnProperty(word)) {
                 selectedDict[word] = false
                 document.getElementById(word).style.backgroundColor = "transparent"
+		//document.getElementById(word).style.backgroundColor = getColorById(word, "fill")
             }
         }
         oldFilter = filter(selectedDict, completeGraph, oldFilter)
