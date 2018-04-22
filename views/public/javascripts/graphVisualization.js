@@ -55,10 +55,21 @@ var graphVisualization = (function() {
 
         //Compute and save the degrees of each vertex
         var edges = [];
-        for (var i = 0; i < graphData.links.length; i++) {
+        
+        var hasDegrees = false;
+        for (var i = 0; i < graphData.links.length && !hasDegrees; i++) {
             var cur = graphData.links[i];
-            cur.source.degree = (cur.source.degree || 0) + 1;
-            cur.target.degree = (cur.target.degree || 0) + 1;
+            if (cur.source.degree || cur.target.degree) {
+                hasDegrees = true;
+            }
+        }
+
+        if (!hasDegrees) {
+            for (var i = 0; i < graphData.links.length; i++) {
+                var cur = graphData.links[i];
+                cur.source.degree = (cur.source.degree || 0) + 1;
+                cur.target.degree = (cur.target.degree || 0) + 1;
+            }
         }
 
         function ticked() {
