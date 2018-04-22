@@ -24,7 +24,6 @@
                 // potato
                 graphVisualization.renderGraphOnSVG(graphFilterer.filterGraphData([], completeGraphData), graphColors.getTagColor)
 
-                console.log(graphColors.getTagCategoryList());
                 var results = <?php echo json_encode($results) ?>;
                 filterMenu.generateFilterMenu(
                     results['aggregations']['tags']['buckets'], 
