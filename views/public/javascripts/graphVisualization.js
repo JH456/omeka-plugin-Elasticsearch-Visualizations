@@ -127,6 +127,13 @@ var graphVisualization = (function() {
         node.append("title")
             .text(function(d) {
                 var result = d.title || d.id;
+                result = result.split('>');
+                if (result.length > 1) {
+                    result = result[1];
+                } else {
+                    result = result[0];
+                }
+                result = result.split('<')[0].trim();
                 if (d.tags) {
                     for (var i = 0; i < d.tags.length; i++) {
                         result += "; " + d.tags[i];
