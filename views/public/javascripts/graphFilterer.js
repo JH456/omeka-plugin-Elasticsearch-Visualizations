@@ -1,23 +1,18 @@
-var graphFilterer = (function() {
-    function passesFilters(tagName, regexFilters) {
-        return regexFilters.some(function(regex) {
-            return regex.test(tagName)
-        })
+var graphFilterer = (function () {
+    function passesFilters(tagName, filters) {
+        return filters.some(function (filter) {
+            return tagName === filter;
+        });
     }
 
-    function filterTagsFromGraphData(exclusionFilterRegexStrings, graphData) {
-        var regexFilters = []
-        for (var i = 0; i < exclusionFilterRegexStrings.length; i++) {
-            regexFilters.push(new RegExp(exclusionFilterRegexStrings[i]))
-        }
-        return  {
-            nodes: graphData.nodes.filter(function(node) {
-
-                    return node.group === 1 || passesFilters(node.id, regexFilters)
-                }),
-            links: graphData.links.filter(function(link) {
-                    return passesFilters(link.target.id, regexFilters)
-                })
+    function filterTagsFromGraphData(filterStrings, graphData) {
+        return {
+            nodes: graphData.nodes.filter(function (node) {
+                return node.group === 1 || passesFilters(node.id, filterStrings)
+            }),
+            links: graphData.links.filter(function (link) {
+                return passesFilters(link.target.id, filterStrings)
+            })
         }
     }
 
@@ -27,7 +22,7 @@ var graphFilterer = (function() {
             var tagName = graphData.links[i].target.id
             if (tagCounts[tagName]) {
                 tagCounts[tagName]++
-            } else  {
+            } else {
                 tagCounts[tagName] = 1
             }
         }

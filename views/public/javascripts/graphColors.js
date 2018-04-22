@@ -1,9 +1,5 @@
 var graphColors = (function () {
-    var tagCategories = {
-        "Folder topic": {
-            fill: '#A6CEE3',
-            stroke: '#536762'
-        },
+    var tagCategoryColors = {
         "Person": {
             fill: '#1F78B5',
             stroke: '#0f3462'
@@ -16,7 +12,7 @@ var graphColors = (function () {
             fill: '#33A02C',
             stroke: '#205016'
         },
-        "Geopolitical": {
+        "Geopolitical Entity": {
             fill: '#FB9A99',
             stroke: '#765550'
         },
@@ -32,41 +28,65 @@ var graphColors = (function () {
             fill: '#FF7F00',
             stroke: '#773700'
         },
-        "Box": {
-            fill: '#993300',
-            stroke: '#502000'
-        },
-        "Folder": {
-            fill: '#993300',
-            stroke: '#502000'
+        "Date": {
+            fill: '#51371E',
+            stroke: '#11070E',
         },
         "Misc": {
             fill: '#CAB2D6',
             stroke: '#656173'
         },
+        "Box": {
+            fill: '#993300',
+            stroke: '#502000'
+        },
+        "Folder topic": {
+            fill: '#A6CEE3',
+            stroke: '#536762'
+        },
+        "Folder": {
+            fill: '#A6CEE3',
+            stroke: '#536762'
+        },
         ".": {
             fill: '#000000',
             stroke: '#000000'
-        },
-        "Date": {
-            fill: '#51371E',
-            stroke: '#11070E',
         }
     }
 
-    var tagCategoryColors = function (tagName, colorType) {
-        if (typeof(tagName) !== "string") {
-            tagName = ".";
-        } else if (tagName.startsWith("Folder topic")) {
-            tagName = "Folder topic";
-        } else {
-            tagName = tagName.split(" ")[0].split(':')[0];
+    var getTagCategoryList = function () {
+        var tagCategoryList = [];
+        for (var category in tagCategoryColors) {
+            if (category !== ".") {
+                tagCategoryList.push(category);
+            }
         }
-        var category = tagCategories[tagName] || tagCategories["."];
-        return category[colorType];
+        return tagCategoryList;
+    }
+
+    var getTagColor = function (tagText, colorType, delimiter) {
+        delimiter = delimiter || ":";
+
+        if (typeof (tagText) !== "string") {
+            tagText = ".";
+        } 
+
+        var category = tagText.split(delimiter)[0].trim();
+        if (tagText.startsWith("Folder topic")) {
+            category = "Folder topic";
+        } else if (tagText.startsWith("Box") &&
+            tagText.indexOf("Folder") >= 0) {
+            category = "Folder";
+        } else if (tagText.startsWith("Box")) {
+            category = "Box";
+        }
+        
+        var colors = tagCategoryColors[category] || tagCategoryColors["."];
+        return colors[colorType];
     }
 
     return {
-        tagCategoryColors
+        getTagColor,
+        getTagCategoryList
     };
 }());
