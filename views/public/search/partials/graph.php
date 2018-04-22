@@ -18,13 +18,18 @@
             graphDataRequester.requestCompleteGraphData(3000)
             .then(function(data) {
                 completeGraphData = data
-                graphVisualization.renderGraphOnSVG(completeGraphData, graphColors.tagCategoryColors)
+                graphVisualization.renderGraphOnSVG(completeGraphData, graphColors.getTagColor)
                 // D3 does weird things to the nodes in complete data the first time it is run, and this
                 // makes it not work with the filters, so I need to call this twice because I am a
                 // potato
-                graphVisualization.renderGraphOnSVG(graphFilterer.filterGraphData([], completeGraphData), graphColors.tagCategoryColors)
+                graphVisualization.renderGraphOnSVG(graphFilterer.filterGraphData([], completeGraphData), graphColors.getTagColor)
+
+                console.log(graphColors.getTagCategoryList());
                 var results = <?php echo json_encode($results) ?>;
-                filterMenu.generateFilterMenu(results['aggregations']['tags']['buckets'], completeGraphData)
+                filterMenu.generateFilterMenu(
+                    results['aggregations']['tags']['buckets'], 
+                    completeGraphData, graphColors.getTagCategoryList()
+                );
             })
         }
     }());
