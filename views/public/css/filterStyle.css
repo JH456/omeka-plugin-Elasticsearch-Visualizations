@@ -1,3 +1,39 @@
 .arrow {
-  background-color: transparent !important;
+  background-color: transparent;
+  top: 1em;
+  left: -2.0em;
+}
+
+.arrow:hover {
+  cursor: pointer;
+}
+
+.category-filter-container {
+  background-color: transparent;
+  border: solid 3px;
+  border-radius: 20px;
+  margin: 3px 0px 3px 0px;
+}
+
+.filter-button {
+  background-color: transparent;
+  color: black !important;
+  width: 100%;
+  outline-width: 0;
+  text-transform: capitalize;
+}
+
+.filter-button:hover {
+  background-color: transparent;
+  outline-width: 0;
+}
+
+.tag-filter-list {
+  list-style: none;
+  overflow: scroll;
+  max-width: 100%;
+  max-height: 200px;
+  margin-right: 15px;
+  margin-left: 15px;
+  border-top: 2px solid;
 }
