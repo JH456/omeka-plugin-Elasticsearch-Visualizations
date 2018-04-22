@@ -13,7 +13,7 @@
     
 </script>
 
-<div id="advancedSearchModal" class="w3-modal">
+<div id="advancedSearchModal" class="w3-modal" style="z-index: 100;">
     <div class="w3-modal-content w3-card-4">
         <div >
             
