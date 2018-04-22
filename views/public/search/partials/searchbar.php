@@ -22,11 +22,12 @@
                placeholder="Search" 
                title="<?php echo __('Search keywords') ?>"
                name="q"
+               style="width: 60%;"
                value="<?php echo htmlspecialchars(array_key_exists('q', $_GET) ? $_GET['q'] : '', ENT_QUOTES); ?>" />
                
-        <input type="submit" value="Search" style="width:20%"/>
+        <input type="submit" value="Search" style="width:30%"/>
     
-        <button class="w3-button w3-black" onclick="modalOpen()">a</button>
+        <button type="button" style="width: 10%" onclick="modalOpen()"><i class="fa fa-gear"></i></button>
         
         <!--<a href="javascript:void(0);" id="elasticsearch-help-btn" style="display:block;clear:both; 
                                                                          color:white;
