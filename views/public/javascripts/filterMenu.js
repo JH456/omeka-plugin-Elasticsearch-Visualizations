@@ -144,6 +144,7 @@ var filterMenu = (function () {
             );
 
             var li = document.createElement("li");
+            li.style.maxWidth = "300px";
             li.appendChild(tagFilterElement);
             tagFilters.appendChild(li);
         }
